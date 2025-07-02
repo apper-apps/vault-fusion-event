@@ -9,6 +9,7 @@ import ApperIcon from '@/components/ApperIcon';
 
 const KYCForm = ({ onSubmit, initialData = {} }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [formData, setFormData] = useState({
     personalDetails: {
       fullName: '',
@@ -438,10 +439,12 @@ const KYCForm = ({ onSubmit, initialData = {} }) => {
           </div>
 
           {/* Terms and Conditions */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+<div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <label className="flex items-start space-x-3">
               <input
                 type="checkbox"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
                 className="mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 required
               />
@@ -497,9 +500,10 @@ const KYCForm = ({ onSubmit, initialData = {} }) => {
         </Button>
 
         {currentStep === steps.length - 1 ? (
-          <Button
+<Button
             variant="success"
             onClick={handleSubmit}
+            disabled={!termsAccepted}
             icon="Send"
             size="lg"
           >

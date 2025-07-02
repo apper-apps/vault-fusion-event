@@ -9,30 +9,30 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
-  "dependencies": {
-    "@reduxjs/toolkit": "2.7.0",
-    "apexcharts": "4.7.0",
-    "date-fns": "4.1.0",
-    "framer-motion": "10.16.4",
-    "lucide-react": "0.299.0",
-    "react": "^18.2.0",
-    "react-apexcharts": "1.7.0",
-    "react-dom": "^18.2.0",
-    "react-redux": "9.2.0",
-    "react-router-dom": "6.15.0",
-    "react-toastify": "11.0.5"
+"dependencies": {
+    "@reduxjs/toolkit": "^2.7.0",
+    "apexcharts": "^4.7.0",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^11.11.17",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-apexcharts": "^1.7.0",
+    "react-dom": "^18.3.1",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^6.26.2",
+    "react-toastify": "^11.0.2"
   },
-  "devDependencies": {
-    "@types/react": "^18.2.15",
-    "@types/react-dom": "^18.2.7",
-    "@vitejs/plugin-react": "^4.0.3",
-    "autoprefixer": "10.4.15",
-    "eslint": "^8.45.0",
-    "eslint-plugin-react": "^7.32.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.3",
+"devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.15.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.14",
     "postcss": "^8.5.5",
-    "tailwindcss": "3.3.3",
+    "tailwindcss": "^3.4.14",
     "vite": "^6.3.5"
   }
 }

@@ -10,11 +10,11 @@ const KYCWizard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (formData) => {
+const handleSubmit = async (formData) => {
     try {
       setLoading(true);
       
-      // Prepare submission data
+      // Prepare submission data with proper document structure
       const submissionData = {
         userId: 'user123', // Mock user ID
         status: 'pending',
@@ -24,13 +24,13 @@ const KYCWizard = () => {
         authorizedSignatory: formData.authorizedSignatory,
         selfieVerification: formData.selfieVerification,
         documents: [
-          ...formData.personalDetails.panDocument,
-          ...formData.businessDetails.gstDocument,
-          ...formData.businessDetails.companyPanDocument,
-          ...formData.businessDetails.addressProof,
-          ...formData.telecomUsage.complianceForm,
-          ...formData.authorizedSignatory.authorizationLetter,
-          ...formData.selfieVerification.selfie
+          ...(formData.personalDetails.panDocument || []),
+          ...(formData.businessDetails.gstDocument || []),
+          ...(formData.businessDetails.companyPanDocument || []),
+          ...(formData.businessDetails.addressProof || []),
+          ...(formData.telecomUsage.complianceForm || []),
+          ...(formData.authorizedSignatory.authorizationLetter || []),
+          ...(formData.selfieVerification.selfie || [])
         ],
         submittedAt: new Date().toISOString(),
         reviewedBy: null,
@@ -46,9 +46,12 @@ const KYCWizard = () => {
         navigate('/dashboard');
       }, 2000);
       
-    } catch (error) {
+} catch (error) {
       console.error('Error submitting KYC:', error);
-      toast.error('Failed to submit KYC. Please try again.');
+      const errorMessage = error.message && error.message.includes('validation') 
+        ? 'Please check all required fields and documents are properly uploaded.'
+        : 'Failed to submit KYC. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
