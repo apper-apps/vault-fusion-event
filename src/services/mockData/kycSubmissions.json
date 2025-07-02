@@ -1,0 +1,476 @@
+[
+  {
+    "Id": 1,
+    "userId": "user123",
+    "status": "pending",
+    "personalDetails": {
+      "fullName": "Rajesh Kumar Sharma",
+      "mobile": "+91-9876543210",
+      "email": "rajesh.sharma@techcorp.in",
+      "aadhaar": "123456789012",
+      "pan": "ABCDE1234F",
+      "dateOfBirth": "1985-07-15",
+      "panDocument": [
+        {
+          "Id": 101,
+          "name": "pan_card_rajesh.pdf",
+          "size": 256000,
+          "type": "application/pdf",
+          "url": "mock://documents/pan_card_rajesh.pdf",
+          "uploadedAt": "2024-01-15T10:30:00Z"
+        }
+      ]
+    },
+    "businessDetails": {
+      "companyName": "TechCorp Solutions Pvt Ltd",
+      "businessType": "pvt-ltd",
+      "gstin": "29ABCDE1234F1Z5",
+      "cin": "U72900KA2020PTC134567",
+      "address": "123 Tech Park, Bangalore, Karnataka - 560001",
+      "gstDocument": [
+        {
+          "Id": 102,
+          "name": "gst_certificate_techcorp.pdf",
+          "size": 512000,
+          "type": "application/pdf",
+          "url": "mock://documents/gst_certificate_techcorp.pdf",
+          "uploadedAt": "2024-01-15T10:35:00Z"
+        }
+      ],
+      "companyPanDocument": [
+        {
+          "Id": 103,
+          "name": "company_pan_techcorp.pdf",
+          "size": 384000,
+          "type": "application/pdf",
+          "url": "mock://documents/company_pan_techcorp.pdf",
+          "uploadedAt": "2024-01-15T10:37:00Z"
+        }
+      ],
+      "addressProof": [
+        {
+          "Id": 104,
+          "name": "address_proof_techcorp.pdf",
+          "size": 768000,
+          "type": "application/pdf",
+          "url": "mock://documents/address_proof_techcorp.pdf",
+          "uploadedAt": "2024-01-15T10:40:00Z"
+        }
+      ]
+    },
+    "telecomUsage": {
+      "intendedUse": ["Inbound IVR", "Outbound Calls", "Bulk SMS"],
+      "trafficType": "transactional",
+      "complianceForm": [
+        {
+          "Id": 105,
+          "name": "telecom_compliance_techcorp.pdf",
+          "size": 128000,
+          "type": "application/pdf",
+          "url": "mock://documents/telecom_compliance_techcorp.pdf",
+          "uploadedAt": "2024-01-15T10:45:00Z"
+        }
+      ]
+    },
+    "authorizedSignatory": {
+      "name": "Rajesh Kumar Sharma",
+      "mobile": "+91-9876543210",
+      "email": "rajesh.sharma@techcorp.in",
+      "designation": "Managing Director",
+      "authorizationLetter": [
+        {
+          "Id": 106,
+          "name": "authorization_letter_rajesh.pdf",
+          "size": 192000,
+          "type": "application/pdf",
+          "url": "mock://documents/authorization_letter_rajesh.pdf",
+          "uploadedAt": "2024-01-15T10:50:00Z"
+        }
+      ]
+    },
+    "selfieVerification": {
+      "selfie": [
+        {
+          "Id": 107,
+          "name": "selfie_rajesh.jpg",
+          "size": 256000,
+          "type": "image/jpeg",
+          "url": "mock://documents/selfie_rajesh.jpg",
+          "uploadedAt": "2024-01-15T10:55:00Z"
+        }
+      ]
+    },
+    "documents": [
+      {
+        "Id": 101,
+        "name": "pan_card_rajesh.pdf",
+        "size": 256000,
+        "type": "application/pdf",
+        "url": "mock://documents/pan_card_rajesh.pdf",
+        "uploadedAt": "2024-01-15T10:30:00Z"
+      },
+      {
+        "Id": 102,
+        "name": "gst_certificate_techcorp.pdf",
+        "size": 512000,
+        "type": "application/pdf",
+        "url": "mock://documents/gst_certificate_techcorp.pdf",
+        "uploadedAt": "2024-01-15T10:35:00Z"
+      },
+      {
+        "Id": 103,
+        "name": "company_pan_techcorp.pdf",
+        "size": 384000,
+        "type": "application/pdf",
+        "url": "mock://documents/company_pan_techcorp.pdf",
+        "uploadedAt": "2024-01-15T10:37:00Z"
+      },
+      {
+        "Id": 104,
+        "name": "address_proof_techcorp.pdf",
+        "size": 768000,
+        "type": "application/pdf",
+        "url": "mock://documents/address_proof_techcorp.pdf",
+        "uploadedAt": "2024-01-15T10:40:00Z"
+      },
+      {
+        "Id": 105,
+        "name": "telecom_compliance_techcorp.pdf",
+        "size": 128000,
+        "type": "application/pdf",
+        "url": "mock://documents/telecom_compliance_techcorp.pdf",
+        "uploadedAt": "2024-01-15T10:45:00Z"
+      },
+      {
+        "Id": 106,
+        "name": "authorization_letter_rajesh.pdf",
+        "size": 192000,
+        "type": "application/pdf",
+        "url": "mock://documents/authorization_letter_rajesh.pdf",
+        "uploadedAt": "2024-01-15T10:50:00Z"
+      },
+      {
+        "Id": 107,
+        "name": "selfie_rajesh.jpg",
+        "size": 256000,
+        "type": "image/jpeg",
+        "url": "mock://documents/selfie_rajesh.jpg",
+        "uploadedAt": "2024-01-15T10:55:00Z"
+      }
+    ],
+    "submittedAt": "2024-01-15T11:00:00Z",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "Id": 2,
+    "userId": "user456",
+    "status": "approved",
+    "personalDetails": {
+      "fullName": "Priya Patel",
+      "mobile": "+91-8765432109",
+      "email": "priya.patel@ecommhub.com",
+      "aadhaar": "987654321098",
+      "pan": "XYZAB5678G",
+      "dateOfBirth": "1990-03-22",
+      "panDocument": [
+        {
+          "Id": 201,
+          "name": "pan_card_priya.pdf",
+          "size": 224000,
+          "type": "application/pdf",
+          "url": "mock://documents/pan_card_priya.pdf",
+          "uploadedAt": "2024-01-10T14:20:00Z"
+        }
+      ]
+    },
+    "businessDetails": {
+      "companyName": "EcommHub India LLP",
+      "businessType": "llp",
+      "gstin": "27XYZAB5678G1Z9",
+      "cin": "",
+      "address": "456 Business Center, Mumbai, Maharashtra - 400001",
+      "gstDocument": [
+        {
+          "Id": 202,
+          "name": "gst_certificate_ecommhub.pdf",
+          "size": 448000,
+          "type": "application/pdf",
+          "url": "mock://documents/gst_certificate_ecommhub.pdf",
+          "uploadedAt": "2024-01-10T14:25:00Z"
+        }
+      ],
+      "companyPanDocument": [
+        {
+          "Id": 203,
+          "name": "company_pan_ecommhub.pdf",
+          "size": 336000,
+          "type": "application/pdf",
+          "url": "mock://documents/company_pan_ecommhub.pdf",
+          "uploadedAt": "2024-01-10T14:28:00Z"
+        }
+      ],
+      "addressProof": [
+        {
+          "Id": 204,
+          "name": "address_proof_ecommhub.pdf",
+          "size": 672000,
+          "type": "application/pdf",
+          "url": "mock://documents/address_proof_ecommhub.pdf",
+          "uploadedAt": "2024-01-10T14:32:00Z"
+        }
+      ]
+    },
+    "telecomUsage": {
+      "intendedUse": ["Missed Call Service", "Bulk SMS"],
+      "trafficType": "promotional",
+      "complianceForm": [
+        {
+          "Id": 205,
+          "name": "telecom_compliance_ecommhub.pdf",
+          "size": 96000,
+          "type": "application/pdf",
+          "url": "mock://documents/telecom_compliance_ecommhub.pdf",
+          "uploadedAt": "2024-01-10T14:38:00Z"
+        }
+      ]
+    },
+    "authorizedSignatory": {
+      "name": "Priya Patel",
+      "mobile": "+91-8765432109",
+      "email": "priya.patel@ecommhub.com",
+      "designation": "Partner",
+      "authorizationLetter": [
+        {
+          "Id": 206,
+          "name": "authorization_letter_priya.pdf",
+          "size": 176000,
+          "type": "application/pdf",
+          "url": "mock://documents/authorization_letter_priya.pdf",
+          "uploadedAt": "2024-01-10T14:42:00Z"
+        }
+      ]
+    },
+    "selfieVerification": {
+      "selfie": [
+        {
+          "Id": 207,
+          "name": "selfie_priya.jpg",
+          "size": 298000,
+          "type": "image/jpeg",
+          "url": "mock://documents/selfie_priya.jpg",
+          "uploadedAt": "2024-01-10T14:45:00Z"
+        }
+      ]
+    },
+    "documents": [
+      {
+        "Id": 201,
+        "name": "pan_card_priya.pdf",
+        "size": 224000,
+        "type": "application/pdf",
+        "url": "mock://documents/pan_card_priya.pdf",
+        "uploadedAt": "2024-01-10T14:20:00Z"
+      },
+      {
+        "Id": 202,
+        "name": "gst_certificate_ecommhub.pdf",
+        "size": 448000,
+        "type": "application/pdf",
+        "url": "mock://documents/gst_certificate_ecommhub.pdf",
+        "uploadedAt": "2024-01-10T14:25:00Z"
+      },
+      {
+        "Id": 203,
+        "name": "company_pan_ecommhub.pdf",
+        "size": 336000,
+        "type": "application/pdf",
+        "url": "mock://documents/company_pan_ecommhub.pdf",
+        "uploadedAt": "2024-01-10T14:28:00Z"
+      },
+      {
+        "Id": 204,
+        "name": "address_proof_ecommhub.pdf",
+        "size": 672000,
+        "type": "application/pdf",
+        "url": "mock://documents/address_proof_ecommhub.pdf",
+        "uploadedAt": "2024-01-10T14:32:00Z"
+      },
+      {
+        "Id": 205,
+        "name": "telecom_compliance_ecommhub.pdf",
+        "size": 96000,
+        "type": "application/pdf",
+        "url": "mock://documents/telecom_compliance_ecommhub.pdf",
+        "uploadedAt": "2024-01-10T14:38:00Z"
+      },
+      {
+        "Id": 206,
+        "name": "authorization_letter_priya.pdf",
+        "size": 176000,
+        "type": "application/pdf",
+        "url": "mock://documents/authorization_letter_priya.pdf",
+        "uploadedAt": "2024-01-10T14:42:00Z"
+      },
+      {
+        "Id": 207,
+        "name": "selfie_priya.jpg",
+        "size": 298000,
+        "type": "image/jpeg",
+        "url": "mock://documents/selfie_priya.jpg",
+        "uploadedAt": "2024-01-10T14:45:00Z"
+      }
+    ],
+    "submittedAt": "2024-01-10T15:00:00Z",
+    "reviewedBy": "admin123",
+    "reviewedAt": "2024-01-12T09:30:00Z",
+    "reviewComment": "All documents verified and approved."
+  },
+  {
+    "Id": 3,
+    "userId": "user789",
+    "status": "rejected",
+    "personalDetails": {
+      "fullName": "Amit Singh",
+      "mobile": "+91-7654321098",
+      "email": "amit.singh@startupventure.co",
+      "aadhaar": "456789123045",
+      "pan": "PQRST9876H",
+      "dateOfBirth": "1988-11-08",
+      "panDocument": [
+        {
+          "Id": 301,
+          "name": "pan_card_amit.jpg",
+          "size": 512000,
+          "type": "image/jpeg",
+          "url": "mock://documents/pan_card_amit.jpg",
+          "uploadedAt": "2024-01-08T16:15:00Z"
+        }
+      ]
+    },
+    "businessDetails": {
+      "companyName": "Startup Venture",
+      "businessType": "proprietorship",
+      "gstin": "09PQRST9876H1Z3",
+      "cin": "",
+      "address": "789 Innovation Hub, Delhi - 110001",
+      "gstDocument": [
+        {
+          "Id": 302,
+          "name": "gst_certificate_startup.pdf",
+          "size": 320000,
+          "type": "application/pdf",
+          "url": "mock://documents/gst_certificate_startup.pdf",
+          "uploadedAt": "2024-01-08T16:20:00Z"
+        }
+      ],
+      "companyPanDocument": [
+        {
+          "Id": 303,
+          "name": "company_pan_startup.pdf",
+          "size": 288000,
+          "type": "application/pdf",
+          "url": "mock://documents/company_pan_startup.pdf",
+          "uploadedAt": "2024-01-08T16:23:00Z"
+        }
+      ],
+      "addressProof": [
+        {
+          "Id": 304,
+          "name": "address_proof_startup.jpg",
+          "size": 896000,
+          "type": "image/jpeg",
+          "url": "mock://documents/address_proof_startup.jpg",
+          "uploadedAt": "2024-01-08T16:28:00Z"
+        }
+      ]
+    },
+    "telecomUsage": {
+      "intendedUse": ["Voice Broadcasting", "Outbound Calls"],
+      "trafficType": "transactional",
+      "complianceForm": [
+        {
+          "Id": 305,
+          "name": "telecom_compliance_startup.pdf",
+          "size": 144000,
+          "type": "application/pdf",
+          "url": "mock://documents/telecom_compliance_startup.pdf",
+          "uploadedAt": "2024-01-08T16:35:00Z"
+        }
+      ]
+    },
+    "authorizedSignatory": {
+      "name": "Amit Singh",
+      "mobile": "+91-7654321098",
+      "email": "amit.singh@startupventure.co",
+      "designation": "Proprietor",
+      "authorizationLetter": [
+        {
+          "Id": 306,
+          "name": "authorization_letter_amit.pdf",
+          "size": 164000,
+          "type": "application/pdf",
+          "url": "mock://documents/authorization_letter_amit.pdf",
+          "uploadedAt": "2024-01-08T16:40:00Z"
+        }
+      ]
+    },
+    "selfieVerification": {
+      "selfie": []
+    },
+    "documents": [
+      {
+        "Id": 301,
+        "name": "pan_card_amit.jpg",
+        "size": 512000,
+        "type": "image/jpeg",
+        "url": "mock://documents/pan_card_amit.jpg",
+        "uploadedAt": "2024-01-08T16:15:00Z"
+      },
+      {
+        "Id": 302,
+        "name": "gst_certificate_startup.pdf",
+        "size": 320000,
+        "type": "application/pdf",
+        "url": "mock://documents/gst_certificate_startup.pdf",
+        "uploadedAt": "2024-01-08T16:20:00Z"
+      },
+      {
+        "Id": 303,
+        "name": "company_pan_startup.pdf",
+        "size": 288000,
+        "type": "application/pdf",
+        "url": "mock://documents/company_pan_startup.pdf",
+        "uploadedAt": "2024-01-08T16:23:00Z"
+      },
+      {
+        "Id": 304,
+        "name": "address_proof_startup.jpg",
+        "size": 896000,
+        "type": "image/jpeg",
+        "url": "mock://documents/address_proof_startup.jpg",
+        "uploadedAt": "2024-01-08T16:28:00Z"
+      },
+      {
+        "Id": 305,
+        "name": "telecom_compliance_startup.pdf",
+        "size": 144000,
+        "type": "application/pdf",
+        "url": "mock://documents/telecom_compliance_startup.pdf",
+        "uploadedAt": "2024-01-08T16:35:00Z"
+      },
+      {
+        "Id": 306,
+        "name": "authorization_letter_amit.pdf",
+        "size": 164000,
+        "type": "application/pdf",
+        "url": "mock://documents/authorization_letter_amit.pdf",
+        "uploadedAt": "2024-01-08T16:40:00Z"
+      }
+    ],
+    "submittedAt": "2024-01-08T17:00:00Z",
+    "reviewedBy": "admin456",
+    "reviewedAt": "2024-01-09T11:15:00Z",
+    "rejectionReason": "PAN card image is not clear. Address proof quality is poor. Please resubmit with clearer documents."
+  }
+]

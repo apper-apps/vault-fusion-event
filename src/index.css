@@ -1,0 +1,156 @@
+@import 'react-toastify/dist/ReactToastify.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom toast overrides */
+.Toastify__toast-container {
+  width: 380px;
+}
+
+.Toastify__toast {
+  font-family: 'Inter', sans-serif;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  min-height: 64px;
+  padding: 16px;
+}
+
+.Toastify__toast--success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.Toastify__toast--error {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.Toastify__toast--warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.Toastify__toast--info {
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+  color: white;
+}
+
+/* Hide progress bar */
+.Toastify__progress-bar {
+  display: none;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Form animations */
+.form-field {
+  @apply transition-all duration-200 ease-out;
+}
+
+.form-field:focus-within {
+  @apply transform scale-[1.01];
+}
+
+/* Document upload area */
+.upload-zone {
+  @apply border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-all duration-200;
+}
+
+.upload-zone.dragover {
+  @apply border-primary-500 bg-primary-50;
+}
+
+/* Status badges */
+.status-badge {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+}
+
+.status-not-submitted {
+  @apply bg-gray-100 text-gray-800;
+}
+
+.status-pending {
+  @apply bg-warning/10 text-warning;
+}
+
+.status-approved {
+  @apply bg-success/10 text-success;
+}
+
+.status-rejected {
+  @apply bg-error/10 text-error;
+}
+
+/* Card hover effects */
+.card-hover {
+  @apply transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-elevation-2;
+}
+
+/* Skeleton loading */
+.skeleton {
+  @apply animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%];
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Progress step indicator */
+.step-indicator {
+  @apply flex items-center justify-center w-8 h-8 rounded-full border-2 text-sm font-medium transition-all duration-200;
+}
+
+.step-indicator.active {
+  @apply bg-primary-600 border-primary-600 text-white;
+}
+
+.step-indicator.completed {
+  @apply bg-success border-success text-white;
+}
+
+.step-indicator.inactive {
+  @apply bg-white border-gray-300 text-gray-400;
+}
+
+/* Document preview */
+.document-preview {
+  @apply relative overflow-hidden rounded-lg shadow-elevation-1 hover:shadow-elevation-2 transition-shadow duration-200;
+}
+
+.document-preview::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 transition-opacity duration-200;
+}
+
+.document-preview:hover::before {
+  @apply opacity-100;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .Toastify__toast-container {
+    width: calc(100vw - 32px);
+    left: 16px;
+    right: 16px;
+  }
+}
