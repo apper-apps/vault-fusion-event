@@ -28,7 +28,7 @@ export const useKYCData = () => {
     loadSubmissions();
   };
 
-  const updateSubmission = async (id, updatedData) => {
+const updateSubmission = async (id, updatedData) => {
     try {
       const updated = await kycService.update(id, updatedData);
       setSubmissions(prev => 
@@ -38,26 +38,42 @@ export const useKYCData = () => {
       );
       return updated;
     } catch (err) {
-      throw new Error('Failed to update submission');
+      const errorMessage = err.message.includes('not found') 
+        ? `KYC submission with ID ${id} was not found. It may have been deleted.`
+        : err.message.includes('validation')
+        ? 'The provided data failed validation. Please check all required fields.'
+        : `Failed to update submission: ${err.message}`;
+      throw new Error(errorMessage);
     }
   };
 
-  const approveSubmission = async (id, reviewedBy, comment = '') => {
-    return updateSubmission(id, {
-      status: 'approved',
-      reviewedBy,
-      reviewedAt: new Date().toISOString(),
-      reviewComment: comment
-    });
+const approveSubmission = async (id, reviewedBy, comment = '') => {
+    try {
+      return await updateSubmission(id, {
+        status: 'approved',
+        reviewedBy,
+        reviewedAt: new Date().toISOString(),
+        reviewComment: comment
+      });
+    } catch (err) {
+      throw new Error(`Failed to approve submission: ${err.message}`);
+    }
   };
 
   const rejectSubmission = async (id, reviewedBy, reason) => {
-    return updateSubmission(id, {
-      status: 'rejected',
-      reviewedBy,
-      reviewedAt: new Date().toISOString(),
-      rejectionReason: reason
-    });
+    try {
+      if (!reason || reason.trim() === '') {
+        throw new Error('Rejection reason is required');
+      }
+      return await updateSubmission(id, {
+        status: 'rejected',
+        reviewedBy,
+        reviewedAt: new Date().toISOString(),
+        rejectionReason: reason
+      });
+    } catch (err) {
+      throw new Error(`Failed to reject submission: ${err.message}`);
+    }
   };
 
   const getStats = () => {

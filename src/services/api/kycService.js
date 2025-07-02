@@ -25,29 +25,56 @@ class KYCService {
     return cloneData(item);
   }
 
-  async create(submissionData) {
+async create(submissionData) {
     await delay(500);
+    
+    // Validate required fields
+    if (!submissionData.userId) {
+      throw new Error('User ID is required for KYC submission');
+    }
+    
+    if (!submissionData.personalDetails || !submissionData.businessDetails) {
+      throw new Error('Personal and business details are required');
+    }
     
     // Find highest existing Id and add 1
     const maxId = this.data.reduce((max, item) => Math.max(max, item.Id), 0);
     const newSubmission = {
       ...submissionData,
-      Id: maxId + 1
+      Id: maxId + 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
     
     this.data.push(newSubmission);
     return cloneData(newSubmission);
   }
 
-  async update(id, updatedData) {
+async update(id, updatedData) {
     await delay(400);
+    
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error('Invalid ID provided for update operation');
+    }
     
     const index = this.data.findIndex(submission => submission.Id === id);
     if (index === -1) {
       throw new Error(`KYC submission with Id ${id} not found`);
     }
     
-    this.data[index] = { ...this.data[index], ...updatedData };
+    // Validate status transitions
+    if (updatedData.status) {
+      const validStatuses = ['pending', 'approved', 'rejected', 'under-review'];
+      if (!validStatuses.includes(updatedData.status)) {
+        throw new Error(`Invalid status: ${updatedData.status}. Must be one of: ${validStatuses.join(', ')}`);
+      }
+    }
+    
+    this.data[index] = { 
+      ...this.data[index], 
+      ...updatedData, 
+      updatedAt: new Date().toISOString() 
+    };
     return cloneData(this.data[index]);
   }
 
@@ -76,21 +103,35 @@ class KYCService {
     return cloneData(filtered);
   }
 
-  async approve(id, reviewedBy, comment = '') {
+async approve(id, reviewedBy, comment = '') {
+    if (!reviewedBy || reviewedBy.trim() === '') {
+      throw new Error('Reviewer information is required for approval');
+    }
+    
     return this.update(id, {
       status: 'approved',
-      reviewedBy,
+      reviewedBy: reviewedBy.trim(),
       reviewedAt: new Date().toISOString(),
-      reviewComment: comment
+      reviewComment: comment.trim(),
+      approvalDate: new Date().toISOString()
     });
   }
 
   async reject(id, reviewedBy, reason) {
+    if (!reviewedBy || reviewedBy.trim() === '') {
+      throw new Error('Reviewer information is required for rejection');
+    }
+    
+    if (!reason || reason.trim() === '') {
+      throw new Error('Rejection reason is required');
+    }
+    
     return this.update(id, {
       status: 'rejected',
-      reviewedBy,
+      reviewedBy: reviewedBy.trim(),
       reviewedAt: new Date().toISOString(),
-      rejectionReason: reason
+      rejectionReason: reason.trim(),
+      rejectionDate: new Date().toISOString()
     });
   }
 
