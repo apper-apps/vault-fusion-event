@@ -5,10 +5,15 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Clone data to prevent mutations
 const cloneData = (data) => JSON.parse(JSON.stringify(data));
-
 class KYCService {
   constructor() {
     this.data = cloneData(mockData);
+    this.documentIdCounter = 10000; // Start document IDs from 10000
+  }
+
+  // Generate next document ID
+  getNextDocumentId() {
+    return ++this.documentIdCounter;
   }
 
   async getAll() {

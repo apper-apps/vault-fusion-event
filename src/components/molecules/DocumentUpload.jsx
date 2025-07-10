@@ -55,15 +55,20 @@ const DocumentUpload = ({
       // Simulate upload delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+// Generate sequential integer IDs for documents
+      let documentIdCounter = Math.max(
+        ...value.map(doc => doc.Id || 0),
+        Date.now() % 10000 // Fallback to ensure uniqueness
+      );
+      
       const fileObjects = validFiles.map(file => ({
-        Id: Date.now() + Math.random(),
+        Id: ++documentIdCounter,
         name: file.name,
         size: file.size,
         type: file.type,
         url: URL.createObjectURL(file),
         uploadedAt: new Date().toISOString()
       }));
-
       const newFiles = multiple ? [...value, ...fileObjects] : fileObjects;
       onChange(newFiles);
       setUploading(false);

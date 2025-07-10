@@ -24,19 +24,96 @@ const DocumentManager = () => {
       setLoading(true);
       setError('');
       
-      const submissions = await kycService.getAll();
+const submissions = await kycService.getAll();
       
-      // Extract all documents from submissions
+      // Extract all documents from submissions across all sections
       const allDocuments = [];
       submissions.forEach(submission => {
-        if (submission.documents) {
-          submission.documents.forEach(doc => {
+        const baseInfo = {
+          submissionId: submission.Id,
+          customerName: submission.personalDetails?.fullName,
+          companyName: submission.businessDetails?.companyName,
+          status: submission.status
+        };
+
+        // Extract personal documents
+        if (submission.personalDetails?.panDocument?.length > 0) {
+          submission.personalDetails.panDocument.forEach(doc => {
             allDocuments.push({
               ...doc,
-              submissionId: submission.Id,
-              customerName: submission.personalDetails?.fullName,
-              companyName: submission.businessDetails?.companyName,
-              status: submission.status
+              ...baseInfo,
+              category: 'Personal',
+              section: 'personalDetails'
+            });
+          });
+        }
+
+        // Extract business documents
+        if (submission.businessDetails?.gstDocument?.length > 0) {
+          submission.businessDetails.gstDocument.forEach(doc => {
+            allDocuments.push({
+              ...doc,
+              ...baseInfo,
+              category: 'Business',
+              section: 'businessDetails'
+            });
+          });
+        }
+
+        if (submission.businessDetails?.companyPanDocument?.length > 0) {
+          submission.businessDetails.companyPanDocument.forEach(doc => {
+            allDocuments.push({
+              ...doc,
+              ...baseInfo,
+              category: 'Business',
+              section: 'businessDetails'
+            });
+          });
+        }
+
+        if (submission.businessDetails?.addressProof?.length > 0) {
+          submission.businessDetails.addressProof.forEach(doc => {
+            allDocuments.push({
+              ...doc,
+              ...baseInfo,
+              category: 'Business',
+              section: 'businessDetails'
+            });
+          });
+        }
+
+        // Extract telecom documents
+        if (submission.telecomUsage?.complianceForm?.length > 0) {
+          submission.telecomUsage.complianceForm.forEach(doc => {
+            allDocuments.push({
+              ...doc,
+              ...baseInfo,
+              category: 'Telecom',
+              section: 'telecomUsage'
+            });
+          });
+        }
+
+        // Extract signatory documents
+        if (submission.authorizedSignatory?.authorizationLetter?.length > 0) {
+          submission.authorizedSignatory.authorizationLetter.forEach(doc => {
+            allDocuments.push({
+              ...doc,
+              ...baseInfo,
+              category: 'Signatory',
+              section: 'authorizedSignatory'
+            });
+          });
+        }
+
+        // Extract selfie verification
+        if (submission.selfieVerification?.selfie?.length > 0) {
+          submission.selfieVerification.selfie.forEach(doc => {
+            allDocuments.push({
+              ...doc,
+              ...baseInfo,
+              category: 'Verification',
+              section: 'selfieVerification'
             });
           });
         }
@@ -99,7 +176,17 @@ const DocumentManager = () => {
     return 'File';
   };
 
-  const getDocumentTypeLabel = (document) => {
+const getDocumentTypeLabel = (document) => {
+    // Use category if available, otherwise infer from name
+    if (document.category) {
+      return document.category === 'Personal' ? 'Personal Document' :
+             document.category === 'Business' ? 'Business Document' :
+             document.category === 'Telecom' ? 'Telecom Document' :
+             document.category === 'Signatory' ? 'Signatory Document' :
+             document.category === 'Verification' ? 'Identity Verification' :
+             document.category;
+    }
+    
     const name = document.name?.toLowerCase() || '';
     if (name.includes('pan')) return 'PAN Card';
     if (name.includes('gst')) return 'GST Certificate';
