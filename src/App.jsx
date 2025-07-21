@@ -38,7 +38,7 @@ return (
             ) : (
               <>
                 <Route index element={<Navigate to="/admin" replace />} />
-                <Route path="admin" element={<AdminDashboard />} />
+<Route path="admin" element={<AdminDashboard />} />
                 <Route path="admin/review/:id" element={<ReviewDetails />} />
                 <Route path="admin/documents" element={<DocumentManager />} />
                 <Route path="admin/reports" element={<Reports />} />
