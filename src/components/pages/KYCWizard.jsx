@@ -107,29 +107,7 @@ toast.error(errorMessage, {
         <h1 className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent mb-4">
           {kycType === 'self-kyc' ? 'Self-KYC Registration' : 'KYC Verification Process'}
         </h1>
-        <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
-          {kycType === 'self-kyc' 
-            ? 'Complete your Self-KYC registration with alternate mobile verification as per DoT guidelines.'
-            : 'Complete your Know Your Customer (KYC) verification to access all CallerDesk services. This process ensures compliance with telecom regulations and helps us provide better service.'
-          }
-        </p>
       </div>
-
-      {/* Progress Information */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-        <div className="flex items-center space-x-4">
-          <div className="p-3 bg-white rounded-xl shadow-elevation-1">
-            <svg className="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">Secure & Encrypted Process</h3>
-            <p className="text-gray-600">All your information is protected with bank-grade security</p>
-          </div>
-        </div>
-      </div>
-
 {/* KYC Form */}
       <KYCForm onSubmit={handleSubmit} kycType={kycType} />
     </motion.div>
