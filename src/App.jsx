@@ -1,6 +1,6 @@
-import React from "react";
-import { Navigate, Route, Router, Routes } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
+import React from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { ToastContainer } from 'react-toastify'
 import Layout from "@/components/organisms/Layout";
 import AdminDashboard from "@/components/pages/AdminDashboard";
 import KYCWizard from "@/components/pages/KYCWizard";
@@ -13,9 +13,9 @@ function App() {
   // Mock user role - in real app this would come from auth context
   const userRole = 'customer'; // 'customer' or 'admin'
 
-  return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
+return (
+    <BrowserRouter>
+      <div className="min-h-screen bg-surface">
         <Routes>
           <Route path="/" element={<Layout userRole={userRole} />}>
             {userRole === 'customer' ? (
@@ -52,8 +52,8 @@ function App() {
           theme="light"
           style={{ zIndex: 9999 }}
         />
-      </div>
-    </Router>
+</div>
+    </BrowserRouter>
   );
 }
 
