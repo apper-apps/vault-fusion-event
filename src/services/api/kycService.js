@@ -255,6 +255,13 @@ return stats;
       updatedAt: new Date().toISOString()
     };
     
-    return cloneData(this.data[index]);
+return cloneData(this.data[index]);
   }
 }
+
+// Create and export singleton instance
+const kycService = new KYCService();
+
+// Export both the instance (default) and the class (named)
+export default kycService;
+export { KYCService, kycService };
