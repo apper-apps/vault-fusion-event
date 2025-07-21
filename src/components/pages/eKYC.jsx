@@ -12,7 +12,7 @@ import ApperIcon from '@/components/ApperIcon';
 import { uidaiService } from '@/services/api/uidaiService';
 import { validateAadhaar, validateOTP } from '@/utils/validators';
 
-const eKYC = () => {
+const EKYC = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -446,4 +446,4 @@ const eKYC = () => {
   );
 };
 
-export default eKYC;
+export default EKYC;
