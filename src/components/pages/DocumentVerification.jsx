@@ -182,10 +182,9 @@ const result = await uidaiService.verifyEKYCOTP(formData.aadhaarNumber, formData
       } else {
         await uidaiService.saveEKYCData(verificationData);
 }
-      
-      toast.success('Document verification completed successfully!');
+toast.success('Document verification completed successfully!');
       setTimeout(() => {
-        navigate('/');
+        navigate('/dashboard');
       }, 2000);
       
     } catch (err) {
