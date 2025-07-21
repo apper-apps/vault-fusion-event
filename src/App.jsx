@@ -1,16 +1,14 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import Layout from '@/components/organisms/Layout';
-import CustomerDashboard from '@/components/pages/CustomerDashboard';
-import KYCWizard from '@/components/pages/KYCWizard';
-import SelfKYCWizard from '@/components/kyc/SelfKYC/SelfKYCWizard';
-import AdminDashboard from '@/components/pages/AdminDashboard';
-import ReviewDetails from '@/components/pages/ReviewDetails';
-import DocumentManager from '@/components/pages/DocumentManager';
-import Reports from '@/components/pages/Reports';
-import Settings from '@/components/pages/Settings';
-
+import React from "react";
+import { Navigate, Route, Router, Routes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import Layout from "@/components/organisms/Layout";
+import AdminDashboard from "@/components/pages/AdminDashboard";
+import KYCWizard from "@/components/pages/KYCWizard";
+import DocumentManager from "@/components/pages/DocumentManager";
+import CustomerDashboard from "@/components/pages/CustomerDashboard";
+import Reports from "@/components/pages/Reports";
+import Settings from "@/components/pages/Settings";
+import ReviewDetails from "@/components/pages/ReviewDetails";
 function App() {
   // Mock user role - in real app this would come from auth context
   const userRole = 'customer'; // 'customer' or 'admin'
