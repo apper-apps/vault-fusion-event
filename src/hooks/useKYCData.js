@@ -28,7 +28,20 @@ export const useKYCData = () => {
     loadSubmissions();
   };
 
-const updateSubmission = async (id, updatedData) => {
+const createSelfKYC = async (selfKYCData) => {
+    try {
+      const created = await kycService.registerSelfKYC(selfKYCData);
+      setSubmissions(prev => [...prev, created]);
+      return created;
+    } catch (err) {
+      const errorMessage = err.message.includes('validation')
+        ? 'The provided Self-KYC data failed validation. Please check all required fields.'
+        : `Failed to create Self-KYC submission: ${err.message}`;
+      throw new Error(errorMessage);
+    }
+  };
+
+  const updateSubmission = async (id, updatedData) => {
     try {
       const updated = await kycService.update(id, updatedData);
       setSubmissions(prev => 
@@ -84,11 +97,12 @@ const approveSubmission = async (id, reviewedBy, comment = '') => {
     }, { total: 0, pending: 0, approved: 0, rejected: 0 });
   };
 
-  return {
+return {
     submissions,
     loading,
     error,
     refetch,
+    createSelfKYC,
     updateSubmission,
     approveSubmission,
     rejectSubmission,

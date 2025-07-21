@@ -7,7 +7,7 @@ import DocumentUpload from '@/components/molecules/DocumentUpload';
 import StepIndicator from '@/components/molecules/StepIndicator';
 import ApperIcon from '@/components/ApperIcon';
 
-const KYCForm = ({ onSubmit, initialData = {} }) => {
+const KYCForm = ({ onSubmit, initialData = {}, kycType = 'regular' }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [formData, setFormData] = useState({
@@ -48,7 +48,7 @@ const KYCForm = ({ onSubmit, initialData = {} }) => {
     ...initialData
   });
 
-  const steps = [
+const getAllSteps = () => [
     { id: 'personal', title: 'Personal Details', description: 'Basic information' },
     { id: 'business', title: 'Business Details', description: 'Company information' },
     { id: 'telecom', title: 'Telecom Usage', description: 'Service requirements' },
@@ -56,6 +56,13 @@ const KYCForm = ({ onSubmit, initialData = {} }) => {
     { id: 'selfie', title: 'Selfie Verification', description: 'Identity verification' },
     { id: 'review', title: 'Review & Submit', description: 'Final review' }
   ];
+
+  const getSelfKYCSteps = () => [
+    { id: 'mobile-verification', title: 'Mobile Verification', description: 'Primary & alternate mobile' },
+    { id: 'review', title: 'Review & Submit', description: 'Final review' }
+  ];
+
+  const steps = kycType === 'self-kyc' ? getSelfKYCSteps() : getAllSteps();
 
   const updateFormData = (section, field, value) => {
     setFormData(prev => ({
@@ -82,6 +89,84 @@ const KYCForm = ({ onSubmit, initialData = {} }) => {
   const handleSubmit = () => {
     onSubmit(formData);
   };
+
+const renderMobileVerification = () => (
+    <Card>
+      <div className="space-y-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <ApperIcon name="Phone" className="h-6 w-6 text-primary-600" />
+          <h3 className="text-lg font-semibold text-gray-900">Mobile Verification</h3>
+        </div>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="flex items-start space-x-3">
+            <ApperIcon name="Info" className="h-5 w-5 text-blue-600 mt-0.5" />
+            <div>
+              <h4 className="text-sm font-medium text-blue-900">Self-KYC Requirements</h4>
+              <p className="mt-1 text-sm text-blue-800">
+                As per DoT guidelines, Self-KYC requires verification with an alternate mobile number of a family member or relative.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Input
+            label="Primary Mobile Number"
+            value={formData.personalDetails.mobile || ''}
+            onChange={(e) => updateFormData('personalDetails', 'mobile', e.target.value)}
+            required
+            type="tel"
+            icon="Phone"
+            placeholder="Enter your primary mobile number"
+          />
+          
+          <Input
+            label="Alternate Mobile (Family/Relative)"
+            value={formData.personalDetails.alternateMobile || ''}
+            onChange={(e) => updateFormData('personalDetails', 'alternateMobile', e.target.value)}
+            required
+            type="tel"
+            icon="Phone"
+            placeholder="Enter family/relative mobile"
+          />
+          
+          <Input
+            label="Contact Person Name"
+            value={formData.personalDetails.contactName || ''}
+            onChange={(e) => updateFormData('personalDetails', 'contactName', e.target.value)}
+            required
+            icon="User"
+            placeholder="Enter contact person's full name"
+          />
+          
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Relationship <span className="text-error">*</span>
+            </label>
+            <select
+              value={formData.personalDetails.relationship || ''}
+              onChange={(e) => updateFormData('personalDetails', 'relationship', e.target.value)}
+              className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              required
+            >
+              <option value="">Select relationship</option>
+              <option value="father">Father</option>
+              <option value="mother">Mother</option>
+              <option value="spouse">Spouse</option>
+              <option value="son">Son</option>
+              <option value="daughter">Daughter</option>
+              <option value="brother">Brother</option>
+              <option value="sister">Sister</option>
+              <option value="friend">Friend</option>
+              <option value="colleague">Colleague</option>
+              <option value="business_partner">Business Partner</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
 
   const renderPersonalDetails = () => (
     <Card>
@@ -408,7 +493,7 @@ const KYCForm = ({ onSubmit, initialData = {} }) => {
     </Card>
   );
 
-  const renderReview = () => (
+const renderReview = () => (
     <Card>
       <div className="space-y-6">
         <div className="flex items-center space-x-3 mb-6">
@@ -417,29 +502,44 @@ const KYCForm = ({ onSubmit, initialData = {} }) => {
         </div>
 
         <div className="space-y-6">
-          {/* Personal Details Summary */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="font-medium text-gray-900 mb-3">Personal Details</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div><span className="text-gray-600">Name:</span> {formData.personalDetails.fullName}</div>
-              <div><span className="text-gray-600">Mobile:</span> {formData.personalDetails.mobile}</div>
-              <div><span className="text-gray-600">Email:</span> {formData.personalDetails.email}</div>
-              <div><span className="text-gray-600">PAN:</span> {formData.personalDetails.pan}</div>
+          {kycType === 'self-kyc' ? (
+            /* Self-KYC Summary */
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-3">Mobile Verification Details</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div><span className="text-gray-600">Primary Mobile:</span> {formData.personalDetails.mobile}</div>
+                <div><span className="text-gray-600">Alternate Mobile:</span> {formData.personalDetails.alternateMobile}</div>
+                <div><span className="text-gray-600">Contact Name:</span> {formData.personalDetails.contactName}</div>
+                <div><span className="text-gray-600">Relationship:</span> {formData.personalDetails.relationship}</div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Personal Details Summary */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-3">Personal Details</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div><span className="text-gray-600">Name:</span> {formData.personalDetails.fullName}</div>
+                  <div><span className="text-gray-600">Mobile:</span> {formData.personalDetails.mobile}</div>
+                  <div><span className="text-gray-600">Email:</span> {formData.personalDetails.email}</div>
+                  <div><span className="text-gray-600">PAN:</span> {formData.personalDetails.pan}</div>
+                </div>
+              </div>
 
-          {/* Business Details Summary */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="font-medium text-gray-900 mb-3">Business Details</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div><span className="text-gray-600">Company:</span> {formData.businessDetails.companyName}</div>
-              <div><span className="text-gray-600">Type:</span> {formData.businessDetails.businessType}</div>
-              <div><span className="text-gray-600">GSTIN:</span> {formData.businessDetails.gstin}</div>
-            </div>
-          </div>
+              {/* Business Details Summary */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-3">Business Details</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div><span className="text-gray-600">Company:</span> {formData.businessDetails.companyName}</div>
+                  <div><span className="text-gray-600">Type:</span> {formData.businessDetails.businessType}</div>
+                  <div><span className="text-gray-600">GSTIN:</span> {formData.businessDetails.gstin}</div>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Terms and Conditions */}
-<div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <label className="flex items-start space-x-3">
               <input
                 type="checkbox"
@@ -459,15 +559,23 @@ const KYCForm = ({ onSubmit, initialData = {} }) => {
     </Card>
   );
 
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 0: return renderPersonalDetails();
-      case 1: return renderBusinessDetails();
-      case 2: return renderTelecomUsage();
-      case 3: return renderAuthorizedSignatory();
-      case 4: return renderSelfieVerification();
-      case 5: return renderReview();
-      default: return renderPersonalDetails();
+const renderStepContent = () => {
+    if (kycType === 'self-kyc') {
+      switch (currentStep) {
+        case 0: return renderMobileVerification();
+        case 1: return renderReview();
+        default: return renderMobileVerification();
+      }
+    } else {
+      switch (currentStep) {
+        case 0: return renderPersonalDetails();
+        case 1: return renderBusinessDetails();
+        case 2: return renderTelecomUsage();
+        case 3: return renderAuthorizedSignatory();
+        case 4: return renderSelfieVerification();
+        case 5: return renderReview();
+        default: return renderPersonalDetails();
+      }
     }
   };
 
@@ -499,15 +607,15 @@ const KYCForm = ({ onSubmit, initialData = {} }) => {
           Previous
         </Button>
 
-        {currentStep === steps.length - 1 ? (
-<Button
+{currentStep === steps.length - 1 ? (
+          <Button
             variant="success"
             onClick={handleSubmit}
             disabled={!termsAccepted}
             icon="Send"
             size="lg"
           >
-            Submit KYC
+            {kycType === 'self-kyc' ? 'Submit Self-KYC' : 'Submit KYC'}
           </Button>
         ) : (
           <Button

@@ -1,14 +1,17 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { validateKYCForm } from "@/utils/validators";
 import KYCForm from "@/components/organisms/KYCForm";
 import Loading from "@/components/ui/Loading";
 import { kycService } from "@/services/api/kycService";
+
 const KYCWizard = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const kycType = searchParams.get('type') === 'self' ? 'self-kyc' : 'regular';
 
 const handleSubmit = async (formData) => {
     try {
@@ -99,14 +102,16 @@ toast.error(errorMessage, {
       transition={{ duration: 0.5 }}
       className="space-y-8"
     >
-      {/* Header */}
+{/* Header */}
       <div className="text-center">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent mb-4">
-          KYC Verification Process
+          {kycType === 'self-kyc' ? 'Self-KYC Registration' : 'KYC Verification Process'}
         </h1>
         <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
-          Complete your Know Your Customer (KYC) verification to access all CallerDesk services. 
-          This process ensures compliance with telecom regulations and helps us provide better service.
+          {kycType === 'self-kyc' 
+            ? 'Complete your Self-KYC registration with alternate mobile verification as per DoT guidelines.'
+            : 'Complete your Know Your Customer (KYC) verification to access all CallerDesk services. This process ensures compliance with telecom regulations and helps us provide better service.'
+          }
         </p>
       </div>
 
@@ -125,8 +130,8 @@ toast.error(errorMessage, {
         </div>
       </div>
 
-      {/* KYC Form */}
-      <KYCForm onSubmit={handleSubmit} />
+{/* KYC Form */}
+      <KYCForm onSubmit={handleSubmit} kycType={kycType} />
     </motion.div>
   );
 };

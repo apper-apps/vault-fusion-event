@@ -25,7 +25,6 @@ function App() {
 <Route index element={<Navigate to="/dashboard" replace />} />
                 <Route path="dashboard" element={<CustomerDashboard />} />
                 <Route path="kyc-submit" element={<KYCWizard />} />
-                <Route path="self-kyc" element={<SelfKYCWizard />} />
                 <Route path="documents" element={<DocumentManager />} />
               </>
             ) : (
