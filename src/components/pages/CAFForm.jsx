@@ -53,10 +53,14 @@ const CAFForm = () => {
       securityDeposit: '',
       installationAddress: ''
     },
-    declarations: {
+declarations: {
       termsAccepted: false,
       kycCompleted: false,
-      informationAccuracy: false
+      informationAccuracy: false,
+      customerDeclaration: false,
+      signaturePlace: '',
+      signatureDate: '',
+      authorizedSignatoryName: ''
     }
   });
 
@@ -611,6 +615,62 @@ const CAFForm = () => {
               </label>
             </div>
           </div>
+
+          {/* Customer Declaration Section */}
+          <div className="space-y-6 pt-6 border-t border-gray-200">
+            <h4 className="text-lg font-semibold text-gray-900">Customer Declaration</h4>
+            
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+              <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
+                <p className="mb-4">
+                  <strong>Customer Declaration:</strong>
+                </p>
+                <p className="mb-4">
+                  I/We <span className="inline-block w-32 border-b border-gray-400 mx-1"></span> am the Authorised Signatory of the <span className="inline-block w-32 border-b border-gray-400 mx-1"></span> and confirm that above information provided by me/us is true and correct in all respects. The documents attached by me are authentic and if found forged, action as per the law of land shall be applicable to me. I have used mobile connection in my name for receiving the OTP in customer Signature.
+                </p>
+                <p className="mb-4">
+                  OTP received on my registered number <span className="inline-block w-24 border-b border-gray-400 mx-1"></span> on <span className="inline-block w-20 border-b border-gray-400 mx-1"></span> <span className="inline-block w-24 border-b border-gray-400 mx-1"></span> shall be treated as my signature & the photograph captured on this CAF is my live photograph.
+                </p>
+                <p className="mb-4">
+                  I/we have read and understood that the terms and conditions mentioned overleaf including allocated plans & conditions, and other regulatory guidelines, stipulations, directives etc. as amended from time to time, shall bind me/us and unconditionally accept them. All charges raised on account of services shall be duly paid by me/us. I/we shall clear all outstanding (Billed & Unbilled) dues for the services, failing which my connection is liable for disconnection. I/we understand that the services are non-transferable and any misuse of the services by the customer or any other person is illegal and shall be liable for criminal action.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <Input
+                  label="Place"
+                  value={formData.declarations.signaturePlace}
+                  onChange={(e) => updateFormData('declarations', 'signaturePlace', e.target.value)}
+                  placeholder="Enter place"
+                />
+                <Input
+                  label="Date"
+                  value={formData.declarations.signatureDate}
+                  onChange={(e) => updateFormData('declarations', 'signatureDate', e.target.value)}
+                  type="date"
+                />
+                <Input
+                  label="Name & Signature of the Authorized Signatory"
+                  value={formData.declarations.authorizedSignatoryName}
+                  onChange={(e) => updateFormData('declarations', 'authorizedSignatoryName', e.target.value)}
+                  placeholder="Enter signatory name"
+                />
+              </div>
+            </div>
+            
+            <label className="flex items-start space-x-3">
+              <input
+                type="checkbox"
+                checked={formData.declarations.customerDeclaration}
+                onChange={(e) => updateFormData('declarations', 'customerDeclaration', e.target.checked)}
+                className="mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                required
+              />
+              <span className="text-sm text-gray-700">
+                I acknowledge and agree to the above customer declaration and confirm that the information provided is accurate
+              </span>
+            </label>
+          </div>
         </div>
       </div>
     </Card>
@@ -712,10 +772,11 @@ const CAFForm = () => {
         if (formData.customerType === 'individual') return true;
         return formData.businessDetails.companyName && 
                formData.businessDetails.businessType;
-      case 4:
+case 4:
         return formData.declarations.termsAccepted && 
                formData.declarations.kycCompleted && 
-               formData.declarations.informationAccuracy;
+               formData.declarations.informationAccuracy &&
+               formData.declarations.customerDeclaration;
       default:
         return true;
     }
