@@ -181,11 +181,11 @@ const result = await uidaiService.verifyEKYCOTP(formData.aadhaarNumber, formData
         await digiLockerService.saveVerificationData(verificationData);
       } else {
         await uidaiService.saveEKYCData(verificationData);
-      }
+}
       
       toast.success('Document verification completed successfully!');
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/');
       }, 2000);
       
     } catch (err) {
