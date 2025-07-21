@@ -5,9 +5,10 @@ import ApperIcon from '@/components/ApperIcon';
 import Button from '@/components/atoms/Button';
 
 const Sidebar = ({ userRole = 'customer', onClose }) => {
-  const customerNavItems = [
+const customerNavItems = [
     { path: '/dashboard', icon: 'LayoutDashboard', label: 'Dashboard' },
     { path: '/kyc-submit', icon: 'FileCheck', label: 'Submit KYC' },
+    { path: '/self-kyc', icon: 'UserCheck', label: 'Self KYC' },
     { path: '/documents', icon: 'FolderOpen', label: 'My Documents' }
   ];
 

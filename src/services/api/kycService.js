@@ -1,4 +1,4 @@
-import mockData from '@/services/mockData/kycSubmissions.json';
+import mockData from "@/services/mockData/kycSubmissions.json";
 
 // Simulate API delay
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -147,9 +147,114 @@ async approve(id, reviewedBy, comment = '') {
       acc[submission.status] = (acc[submission.status] || 0) + 1;
       return acc;
     }, { total: 0 });
+return stats;
+  }
+
+  // Self-KYC specific operations
+  async registerSelfKYC(registrationData) {
+    await delay(500);
     
-    return stats;
+    // Validate required fields for Self-KYC
+    if (!registrationData.primaryMobile) {
+      throw new Error('Primary mobile number is required');
+    }
+    
+    if (!registrationData.alternateMobile) {
+      throw new Error('Alternate mobile number is required');
+    }
+    
+    if (!registrationData.relationship) {
+      throw new Error('Relationship with alternate contact is required');
+    }
+    
+    // Find highest existing Id and add 1
+    const maxId = this.data.reduce((max, item) => Math.max(max, item.Id), 0);
+    const newRegistration = {
+      ...registrationData,
+      Id: maxId + 1,
+      type: 'self-kyc',
+      status: 'pending-verification',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      otpVerified: false
+    };
+    
+    this.data.push(newRegistration);
+    return cloneData(newRegistration);
+  }
+
+  async sendOTP(mobile, type = 'registration') {
+    await delay(200);
+    
+    // Simulate OTP generation (in real app, this would call SMS gateway)
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Store OTP in memory for verification (in real app, use secure storage)
+    this.otpStorage = this.otpStorage || {};
+    this.otpStorage[mobile] = {
+      otp,
+      type,
+      expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes
+      attempts: 0
+    };
+    
+    return {
+      success: true,
+      message: `OTP sent to ${mobile}`,
+      // In development, return OTP for testing
+      debugOTP: otp
+    };
+  }
+
+  async verifyOTP(mobile, enteredOTP) {
+    await delay(300);
+    
+    const otpData = this.otpStorage?.[mobile];
+    
+    if (!otpData) {
+      throw new Error('OTP not found or expired. Please request a new OTP.');
+    }
+    
+    if (Date.now() > otpData.expiresAt) {
+      delete this.otpStorage[mobile];
+      throw new Error('OTP has expired. Please request a new OTP.');
+    }
+    
+    otpData.attempts++;
+    
+    if (otpData.attempts > 3) {
+      delete this.otpStorage[mobile];
+      throw new Error('Too many failed attempts. Please request a new OTP.');
+    }
+    
+    if (otpData.otp !== enteredOTP) {
+      throw new Error('Invalid OTP. Please check and try again.');
+    }
+    
+    // OTP verified successfully
+    delete this.otpStorage[mobile];
+    
+    return {
+      success: true,
+      message: 'OTP verified successfully'
+    };
+  }
+
+  async updateSelfKYCStatus(id, status, otpVerified = false) {
+    await delay(200);
+    
+    const index = this.data.findIndex(item => item.Id === id);
+    if (index === -1) {
+      throw new Error(`Self-KYC registration with Id ${id} not found`);
+    }
+    
+    this.data[index] = {
+      ...this.data[index],
+      status,
+      otpVerified,
+      updatedAt: new Date().toISOString()
+    };
+    
+    return cloneData(this.data[index]);
   }
 }
-
-export const kycService = new KYCService();

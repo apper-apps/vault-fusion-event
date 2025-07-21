@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import Layout from '@/components/organisms/Layout';
 import CustomerDashboard from '@/components/pages/CustomerDashboard';
 import KYCWizard from '@/components/pages/KYCWizard';
+import SelfKYCWizard from '@/components/kyc/SelfKYC/SelfKYCWizard';
 import AdminDashboard from '@/components/pages/AdminDashboard';
 import ReviewDetails from '@/components/pages/ReviewDetails';
 import DocumentManager from '@/components/pages/DocumentManager';
@@ -21,9 +22,10 @@ function App() {
           <Route path="/" element={<Layout userRole={userRole} />}>
             {userRole === 'customer' ? (
               <>
-                <Route index element={<Navigate to="/dashboard" replace />} />
+<Route index element={<Navigate to="/dashboard" replace />} />
                 <Route path="dashboard" element={<CustomerDashboard />} />
                 <Route path="kyc-submit" element={<KYCWizard />} />
+                <Route path="self-kyc" element={<SelfKYCWizard />} />
                 <Route path="documents" element={<DocumentManager />} />
               </>
             ) : (

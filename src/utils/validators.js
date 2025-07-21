@@ -154,5 +154,66 @@ export const validateKYCForm = (formData) => {
   return {
     isValid: Object.keys(errors).length === 0,
     errors
+};
+};
+
+// Self-KYC specific validators
+export const validateOTP = (otp) => {
+  const otpRegex = /^\d{6}$/;
+  return otpRegex.test(otp);
+};
+
+export const validateAlternateMobile = (mobile, primaryMobile) => {
+  if (!validateMobile(mobile)) {
+    return { isValid: false, message: 'Invalid mobile number format' };
+  }
+  
+  if (mobile === primaryMobile) {
+    return { isValid: false, message: 'Alternate mobile cannot be same as primary mobile' };
+  }
+  
+  return { isValid: true };
+};
+
+export const validateRelationship = (relationship) => {
+  const validRelationships = [
+    'father', 'mother', 'spouse', 'son', 'daughter', 
+    'brother', 'sister', 'friend', 'colleague', 'business_partner'
+  ];
+  
+  return validRelationships.includes(relationship.toLowerCase());
+};
+
+export const validateSelfKYCForm = (formData) => {
+  const errors = {};
+  
+  if (!validateRequired(formData.primaryMobile)) {
+    errors.primaryMobile = 'Primary mobile number is required';
+  } else if (!validateMobile(formData.primaryMobile)) {
+    errors.primaryMobile = 'Invalid primary mobile number format';
+  }
+  
+  if (!validateRequired(formData.alternateMobile)) {
+    errors.alternateMobile = 'Alternate mobile number is required';
+  } else {
+    const altMobileValidation = validateAlternateMobile(formData.alternateMobile, formData.primaryMobile);
+    if (!altMobileValidation.isValid) {
+      errors.alternateMobile = altMobileValidation.message;
+    }
+  }
+  
+  if (!validateRequired(formData.contactName)) {
+    errors.contactName = 'Contact person name is required';
+  }
+  
+  if (!validateRequired(formData.relationship)) {
+    errors.relationship = 'Relationship is required';
+  } else if (!validateRelationship(formData.relationship)) {
+    errors.relationship = 'Please select a valid relationship';
+  }
+  
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
   };
 };
