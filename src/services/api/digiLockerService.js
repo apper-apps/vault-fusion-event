@@ -108,7 +108,7 @@ class DigiLockerService {
     return mockDocuments;
   }
 
-  async verifyDocuments(documentTypes) {
+async verifyDocuments(documentTypes) {
     await delay(600);
     
     const verificationResults = [];
@@ -121,7 +121,15 @@ class DigiLockerService {
         verifiedAt: new Date().toISOString(),
         issuer: this.getDocumentIssuer(docType),
         status: 'verified',
-        details: this.generateMockVerificationDetails(docType)
+        details: this.generateMockVerificationDetails(docType),
+        // DoT Compliance Extensions
+        dotCompliance: {
+          authentic: true,
+          territoriallyValid: true,
+          issuerVerified: true,
+          tamperingCheck: true,
+          expiryValid: true
+        }
       };
       
       verificationResults.push(verificationResult);
@@ -285,16 +293,28 @@ class DigiLockerService {
   }
 
   // Additional utility methods
-  async checkDocumentAuthenticity(documentId) {
+async checkDocumentAuthenticity(documentId) {
     await delay(400);
+    
+    // Enhanced DoT compliance authenticity check
+    const authenticityScore = Math.floor(Math.random() * 15 + 85); // 85-100%
     
     return {
       documentId,
-      authentic: true,
+      authentic: authenticityScore >= 80,
       verifiedBy: 'DigiLocker',
-      issuerVerified: true,
-      tampering: false,
-      verifiedAt: new Date().toISOString()
+      issuerVerified: Math.random() > 0.05, // 95% pass rate
+      tampering: Math.random() < 0.05, // 5% tampering detected
+      digitalSignature: Math.random() > 0.1, // 90% have valid signatures
+      verifiedAt: new Date().toISOString(),
+      // DoT Specific Checks
+      dotCompliance: {
+        territorialBoundary: Math.random() > 0.05,
+        jurisdictionMatch: Math.random() > 0.1,
+        formatCompliance: Math.random() > 0.05,
+        authenticationChain: Math.random() > 0.05
+      },
+      score: authenticityScore
     };
   }
 

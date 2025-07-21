@@ -9,6 +9,7 @@ const customerNavItems = [
     { path: '/dashboard', icon: 'LayoutDashboard', label: 'Dashboard' },
     { path: '/kyc-submit', icon: 'FileCheck', label: 'Submit KYC' },
     { path: '/self-kyc', icon: 'UserCheck', label: 'Self KYC' },
+    { path: '/document-verification', icon: 'Shield', label: 'Document Verification' },
     { path: '/documents', icon: 'FolderOpen', label: 'My Documents' }
   ];
 

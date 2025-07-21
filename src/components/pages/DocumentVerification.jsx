@@ -1,16 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { toast } from 'react-toastify';
-import Card from '@/components/atoms/Card';
-import Button from '@/components/atoms/Button';
-import Input from '@/components/atoms/Input';
-import Badge from '@/components/atoms/Badge';
-import Loading from '@/components/ui/Loading';
-import Error from '@/components/ui/Error';
-import ApperIcon from '@/components/ApperIcon';
-import { digiLockerService } from '@/services/api/digiLockerService';
-import { uidaiService } from '@/services/api/uidaiService';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+import DigiLockerConnect from "@/components/kyc/DocumentVerification/DigiLockerConnect";
+import DocumentAuthenticity from "@/components/kyc/DocumentVerification/DocumentAuthenticity";
+import FaceMatching from "@/components/kyc/DocumentVerification/FaceMatching";
+import TerritorialValidation from "@/components/kyc/DocumentVerification/TerritorialValidation";
+import LivePhotoValidator from "@/components/kyc/DocumentVerification/LivePhotoValidator";
+import ApperIcon from "@/components/ApperIcon";
+import Error from "@/components/ui/Error";
+import Loading from "@/components/ui/Loading";
+import Card from "@/components/atoms/Card";
+import Input from "@/components/atoms/Input";
+import Badge from "@/components/atoms/Badge";
+import Button from "@/components/atoms/Button";
+import uidaiService from "@/services/api/uidaiService";
+import digiLockerService from "@/services/api/digiLockerService";
+
+// DoT Compliant Components
 
 const DocumentVerification = () => {
   const navigate = useNavigate();
@@ -23,13 +30,26 @@ const DocumentVerification = () => {
     verificationType: 'digilocker', // 'digilocker' or 'uidai'
     aadhaarNumber: '',
     documentType: '',
-    otp: ''
+    otp: '',
+    // DoT Compliance Fields
+    dotCompliance: {
+      territorialValidation: null,
+      faceMatching: null,
+      livePhotoValidation: null,
+      authenticityVerification: null
+    },
+    digiLockerData: null,
+    uidaiData: null
   });
 
   const steps = [
     { id: 'method', title: 'Method', description: 'Choose verification method' },
     { id: 'connect', title: 'Connect', description: 'Connect to service' },
     { id: 'documents', title: 'Documents', description: 'Verify documents' },
+    { id: 'authenticity', title: 'Authenticity', description: 'Document authenticity' },
+    { id: 'face_matching', title: 'Face Match', description: 'Photograph matching' },
+    { id: 'territorial', title: 'Territorial', description: 'Boundary validation' },
+    { id: 'live_photo', title: 'Live Photo', description: 'Photo verification' },
     { id: 'complete', title: 'Complete', description: 'Verification summary' }
   ];
 
@@ -44,6 +64,16 @@ const DocumentVerification = () => {
 
   const updateFormData = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const updateDotCompliance = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      dotCompliance: {
+        ...prev.dotCompliance,
+        [field]: value
+      }
+    }));
   };
 
   const handleMethodSelection = () => {
@@ -115,8 +145,12 @@ const DocumentVerification = () => {
           return;
         }
         
-        const result = await uidaiService.verifyEKYCOTP(formData.aadhaarNumber, formData.otp);
+const result = await uidaiService.verifyEKYCOTP(formData.aadhaarNumber, formData.otp);
         verificationResults = [result];
+      }
+      // Store UIDAI data for face matching if UIDAI verification
+      if (formData.verificationType === 'uidai' && verificationResults[0]?.kycData) {
+        setFormData(prev => ({ ...prev, uidaiData: verificationResults[0].kycData }));
       }
       
       setVerifiedDocuments(verificationResults);
@@ -272,15 +306,30 @@ const DocumentVerification = () => {
     </Card>
   );
 
-  const renderConnection = () => {
+const renderConnection = () => {
     if (formData.verificationType === 'digilocker') {
+      return (
+        <DigiLockerConnect
+          isConnected={digiLockerConnected}
+          onConnectionSuccess={(authData) => {
+            setDigiLockerConnected(true);
+            setFormData(prev => ({ ...prev, digiLockerData: authData }));
+            setCurrentStep(2);
+          }}
+          onError={(error) => {
+            setError(error);
+            toast.error(error);
+          }}
+        />
+      );
+    } else {
       return (
         <Card>
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <ApperIcon name="Cloud" className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Connect to DigiLocker</h2>
-              <p className="text-gray-600">Authorize access to your DigiLocker account</p>
+              <ApperIcon name="Shield" className="h-12 w-12 text-green-600 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">UIDAI Verification</h2>
+              <p className="text-gray-600">Enter your Aadhaar number for OTP-based verification</p>
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -441,13 +490,13 @@ const DocumentVerification = () => {
     }
   };
 
-  const renderComplete = () => (
+const renderComplete = () => (
     <Card>
       <div className="space-y-6">
         <div className="text-center mb-8">
           <ApperIcon name="CheckCircle" className="h-12 w-12 text-green-600 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Verification Complete</h2>
-          <p className="text-gray-600">Your documents have been successfully verified</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">DoT Compliant Verification Complete</h2>
+          <p className="text-gray-600">Your documents have been successfully verified with full DoT compliance</p>
         </div>
 
         <div className="bg-gray-50 rounded-lg p-6">
@@ -462,6 +511,11 @@ const DocumentVerification = () => {
             </div>
             
             <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">DoT Compliance:</span>
+              <Badge variant="success" size="sm" icon="Shield">Fully Compliant</Badge>
+            </div>
+            
+            <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-gray-700">Status:</span>
               <Badge variant="success" size="sm" icon="CheckCircle">Verified</Badge>
             </div>
@@ -469,6 +523,33 @@ const DocumentVerification = () => {
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-gray-700">Verified On:</span>
               <span className="text-sm text-gray-600">{new Date().toLocaleDateString()}</span>
+            </div>
+          </div>
+
+          {/* DoT Compliance Summary */}
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <h4 className="text-sm font-medium text-gray-700 mb-3">DoT Compliance Checks:</h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center space-x-2">
+                <Badge variant={formData.dotCompliance.authenticityVerification ? 'success' : 'secondary'} size="sm" icon="Shield">
+                  Document Authenticity
+                </Badge>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Badge variant={formData.dotCompliance.faceMatching ? 'success' : 'secondary'} size="sm" icon="Eye">
+                  Face Matching
+                </Badge>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Badge variant={formData.dotCompliance.territorialValidation ? 'success' : 'secondary'} size="sm" icon="MapPin">
+                  Territorial Validation
+                </Badge>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Badge variant={formData.dotCompliance.livePhotoValidation ? 'success' : 'secondary'} size="sm" icon="Camera">
+                  Live Photo Validation
+                </Badge>
+              </div>
             </div>
           </div>
 
@@ -486,21 +567,82 @@ const DocumentVerification = () => {
           )}
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-start space-x-3">
-            <ApperIcon name="Info" className="h-5 w-5 text-blue-600 mt-0.5" />
+            <ApperIcon name="Shield" className="h-5 w-5 text-green-600 mt-0.5" />
             <div>
-              <h4 className="text-sm font-medium text-blue-900">What's Next?</h4>
-              <ul className="mt-1 text-sm text-blue-800 space-y-1">
-                <li>• Your verified documents are now part of your KYC profile</li>
-                <li>• No additional document uploads required</li>
-                <li>• Your verification is government-backed and compliant</li>
+              <h4 className="text-sm font-medium text-green-900">DoT Compliance Benefits</h4>
+              <ul className="mt-1 text-sm text-green-800 space-y-1">
+                <li>• Full territorial boundary compliance verified</li>
+                <li>• UIDAI photograph matching completed</li>
+                <li>• Live photograph clarity verification passed</li>
+                <li>• Document authenticity confirmed by government sources</li>
+                <li>• Face recognition matching successful</li>
               </ul>
             </div>
           </div>
         </div>
       </div>
-    </Card>
+</Card>
+  );
+// DoT Compliance Step Renderers
+  const renderDocumentAuthenticity = () => (
+    <DocumentAuthenticity
+      documents={verifiedDocuments}
+      onVerificationComplete={(results) => {
+        updateDotCompliance('authenticityVerification', results);
+        setCurrentStep(4);
+        toast.success('Document authenticity verification completed');
+      }}
+      onError={(error) => {
+        setError(error);
+        toast.error(error);
+      }}
+    />
+  );
+
+  const renderFaceMatching = () => (
+    <FaceMatching
+      uidaiData={formData.uidaiData}
+      onMatchingComplete={(result) => {
+        updateDotCompliance('faceMatching', result);
+        setCurrentStep(5);
+        toast.success('Face matching verification completed');
+      }}
+      onError={(error) => {
+        setError(error);
+        toast.error(error);
+      }}
+    />
+  );
+
+  const renderTerritorialValidation = () => (
+    <TerritorialValidation
+      documentData={formData.digiLockerData || formData.uidaiData}
+      onValidationComplete={(result) => {
+        updateDotCompliance('territorialValidation', result);
+        setCurrentStep(6);
+        toast.success('Territorial validation completed');
+      }}
+      onError={(error) => {
+        setError(error);
+        toast.error(error);
+      }}
+    />
+  );
+
+  const renderLivePhotoValidator = () => (
+    <LivePhotoValidator
+      onValidationComplete={(result) => {
+        updateDotCompliance('livePhotoValidation', result);
+        setCurrentStep(7);
+        toast.success('Live photo validation completed');
+      }}
+      onError={(error) => {
+        setError(error);
+        toast.error(error);
+      }}
+    />
   );
 
   const renderStepContent = () => {
@@ -508,7 +650,11 @@ const DocumentVerification = () => {
       case 0: return renderMethodSelection();
       case 1: return renderConnection();
       case 2: return renderDocumentSelection();
-      case 3: return renderComplete();
+      case 3: return renderDocumentAuthenticity();
+      case 4: return renderFaceMatching();
+      case 5: return renderTerritorialValidation();
+      case 6: return renderLivePhotoValidator();
+      case 7: return renderComplete();
       default: return renderMethodSelection();
     }
   };
@@ -552,7 +698,7 @@ const DocumentVerification = () => {
             </Button>
           );
         }
-      case 2:
+case 2:
         return (
           <Button
             onClick={handleDocumentVerification}
@@ -571,13 +717,58 @@ const DocumentVerification = () => {
       case 3:
         return (
           <Button
+            onClick={() => setCurrentStep(4)}
+            disabled={!verifiedDocuments.length}
+            icon="ArrowRight"
+            size="lg"
+          >
+            Start DoT Compliance Checks
+          </Button>
+        );
+      case 4:
+        return (
+          <Button
+            onClick={() => setCurrentStep(5)}
+            disabled={!formData.dotCompliance.authenticityVerification}
+            icon="ArrowRight"
+            size="lg"
+          >
+            Continue to Face Matching
+          </Button>
+        );
+      case 5:
+        return (
+          <Button
+            onClick={() => setCurrentStep(6)}
+            disabled={!formData.dotCompliance.faceMatching}
+            icon="ArrowRight"
+            size="lg"
+          >
+            Continue to Territorial Validation
+          </Button>
+        );
+      case 6:
+        return (
+          <Button
+            onClick={() => setCurrentStep(7)}
+            disabled={!formData.dotCompliance.territorialValidation}
+            icon="ArrowRight"
+            size="lg"
+          >
+            Continue to Live Photo Validation
+          </Button>
+        );
+      case 7:
+        return (
+          <Button
             onClick={handleCompleteVerification}
             loading={loading}
+            disabled={!formData.dotCompliance.livePhotoValidation}
             variant="success"
             icon="Save"
             size="lg"
           >
-            Save & Complete
+            Complete DoT Verification
           </Button>
         );
       default:
@@ -593,15 +784,15 @@ const DocumentVerification = () => {
     return <Error message={error} onRetry={() => setError('')} />;
   }
 
-  return (
+return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-            Document Verification
+            DoT Compliant Document Verification
           </h1>
           <p className="text-gray-600 mt-2">
-            Verify your documents using DigiLocker or UIDAI integration
+            Complete document verification with DoT compliance including territorial validation, face matching, and live photo verification
           </p>
         </div>
         

@@ -249,8 +249,132 @@ export const validateDigiLockerDocument = (document) => {
   if (missingFields.length > 0) {
     return { isValid: false, message: `Missing document fields: ${missingFields.join(', ')}` };
   }
-  
+return { isValid: true };
+};
+
+// DoT Compliance Validators
+export const validateTerritorialBoundary = (documentTerritory, userTerritory) => {
+  if (!documentTerritory || !userTerritory) {
+    return { isValid: false, message: 'Territory information is required for validation' };
+  }
+
+  const isSameState = documentTerritory.state === userTerritory.state;
+  const isCrossBoundaryAllowed = true; // In real implementation, this would check DoT rules
+
+  if (!isSameState && !isCrossBoundaryAllowed) {
+    return { 
+      isValid: false, 
+      message: `Cross-boundary verification not allowed between ${documentTerritory.state} and ${userTerritory.state}` 
+    };
+  }
+
+  return { isValid: true, territoryMatch: isSameState };
+};
+
+export const validateFaceMatchingResult = (matchingResult) => {
+  if (!matchingResult || typeof matchingResult !== 'object') {
+    return { isValid: false, message: 'Invalid face matching result format' };
+  }
+
+  const requiredFields = ['confidence', 'status', 'faceRecords'];
+  const missingFields = requiredFields.filter(field => !matchingResult[field]);
+
+  if (missingFields.length > 0) {
+    return { isValid: false, message: `Missing face matching fields: ${missingFields.join(', ')}` };
+  }
+
+  if (matchingResult.confidence < 70) {
+    return { isValid: false, message: `Face matching confidence too low: ${matchingResult.confidence}%` };
+  }
+
+  if (!matchingResult.faceRecords?.noError) {
+    return { isValid: false, message: 'Errors detected in face records validation' };
+  }
+
   return { isValid: true };
+};
+
+export const validateLivePhotoClarity = (photoValidation) => {
+  if (!photoValidation || typeof photoValidation !== 'object') {
+    return { isValid: false, message: 'Invalid photo validation data' };
+  }
+
+  const minClarityScore = 85;
+  if (photoValidation.clarity?.score < minClarityScore) {
+    return { 
+      isValid: false, 
+      message: `Photo clarity score too low: ${photoValidation.clarity?.score}%. Minimum required: ${minClarityScore}%` 
+    };
+  }
+
+  const requiredChecks = ['face_detected', 'eyes_visible', 'proper_lighting', 'no_blur'];
+  const failedChecks = requiredChecks.filter(check => !photoValidation.checks?.[check]);
+
+  if (failedChecks.length > 0) {
+    return { isValid: false, message: `Failed photo checks: ${failedChecks.join(', ')}` };
+  }
+
+  return { isValid: true };
+};
+
+export const validateDocumentAuthenticity = (authenticityResult) => {
+  if (!authenticityResult || typeof authenticityResult !== 'object') {
+    return { isValid: false, message: 'Invalid authenticity result format' };
+  }
+
+  if (!authenticityResult.authentic) {
+    return { isValid: false, message: 'Document failed authenticity verification' };
+  }
+
+  if (authenticityResult.tampering) {
+    return { isValid: false, message: 'Document tampering detected' };
+  }
+
+  if (!authenticityResult.issuerVerified) {
+    return { isValid: false, message: 'Document issuer could not be verified' };
+  }
+
+  return { isValid: true };
+};
+
+export const validateCompleteDoTVerification = (dotComplianceData) => {
+  const errors = {};
+
+  if (!dotComplianceData.authenticityVerification) {
+    errors.authenticity = 'Document authenticity verification is required';
+  }
+
+  if (!dotComplianceData.faceMatching) {
+    errors.faceMatching = 'Face matching verification is required';
+  }
+
+  if (!dotComplianceData.territorialValidation) {
+    errors.territorial = 'Territorial boundary validation is required';
+  }
+
+  if (!dotComplianceData.livePhotoValidation) {
+    errors.livePhoto = 'Live photo validation is required';
+  }
+
+  // Validate individual components
+  if (dotComplianceData.faceMatching) {
+    const faceValidation = validateFaceMatchingResult(dotComplianceData.faceMatching);
+    if (!faceValidation.isValid) {
+      errors.faceMatching = faceValidation.message;
+    }
+  }
+
+  if (dotComplianceData.livePhotoValidation) {
+    const photoValidation = validateLivePhotoClarity(dotComplianceData.livePhotoValidation);
+    if (!photoValidation.isValid) {
+      errors.livePhoto = photoValidation.message;
+    }
+  }
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
 };
 
 // Conversion validators

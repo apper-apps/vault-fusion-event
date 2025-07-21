@@ -73,13 +73,20 @@ class UIDAIService {
     // OTP verified successfully, generate mock KYC data
     delete this.otpStorage[aadhaarNumber];
     
-    const kycData = this.generateMockKYCData(aadhaarNumber);
+const kycData = this.generateMockKYCData(aadhaarNumber);
     
     return {
       success: true,
       message: 'e-KYC verification successful',
       kycData: kycData,
-      verifiedAt: new Date().toISOString()
+      verifiedAt: new Date().toISOString(),
+      // Enhanced for DoT compliance
+      faceData: {
+        photoAvailable: true,
+        faceRecognitionReady: true,
+        noErrorInRecords: Math.random() > 0.1,
+        photoQuality: Math.floor(Math.random() * 20 + 80) // 80-100%
+      }
     };
   }
 
@@ -96,7 +103,7 @@ class UIDAIService {
     
     const randomIndex = Math.floor(Math.random() * mockNames.length);
     
-    return {
+return {
       name: mockNames[randomIndex],
       dateOfBirth: '1990-05-15',
       gender: Math.random() > 0.5 ? 'Male' : 'Female',
@@ -106,7 +113,19 @@ class UIDAIService {
       aadhaarNumber: aadhaarNumber,
       photo: null, // In real implementation, would contain base64 photo data
       verificationLevel: 'UIDAI_VERIFIED',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      // DoT Compliance Data
+      territorialInfo: {
+        state: mockAddresses[randomIndex].split(',').slice(-1)[0].trim(),
+        district: mockAddresses[randomIndex].split(',')[1]?.trim() || 'Unknown',
+        issueLocation: mockAddresses[randomIndex].split(',').slice(-1)[0].trim()
+      },
+      photographData: {
+        available: true,
+        quality: Math.floor(Math.random() * 20 + 80),
+        faceDetected: true,
+        lastUpdated: new Date().toISOString()
+      }
     };
   }
 
