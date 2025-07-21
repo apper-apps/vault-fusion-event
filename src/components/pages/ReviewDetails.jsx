@@ -386,8 +386,125 @@ const ReviewDetails = () => {
             </div>
           </div>
         )}
-      </Card>
+</Card>
 
+      {/* Customer Declaration */}
+      <Card>
+        <div className="flex items-center space-x-3 mb-6">
+          <ApperIcon name="ShieldCheck" className="h-6 w-6 text-primary-600" />
+          <h3 className="text-xl font-semibold text-gray-900">Customer Declaration & Consent</h3>
+        </div>
+
+        <div className="space-y-6">
+          {/* Declaration Statements */}
+          <div className="bg-gray-50 rounded-lg p-6">
+            <h4 className="text-md font-medium text-gray-800 mb-4">Declaration Statements</h4>
+            <div className="space-y-3">
+              <div className="flex items-start space-x-3">
+                <ApperIcon name="CheckCircle" className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-gray-700">
+                  I hereby declare that the information provided by me is true, complete, and accurate to the best of my knowledge and belief.
+                </p>
+              </div>
+              <div className="flex items-start space-x-3">
+                <ApperIcon name="CheckCircle" className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-gray-700">
+                  I understand that any false information or documentation provided may result in the rejection of my application and potential legal consequences.
+                </p>
+              </div>
+              <div className="flex items-start space-x-3">
+                <ApperIcon name="CheckCircle" className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-gray-700">
+                  I consent to the verification of the information provided through appropriate agencies and databases.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Terms and Conditions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Terms & Conditions</label>
+              <div className="flex items-center space-x-2">
+                <ApperIcon name="CheckSquare" className="h-5 w-5 text-success" />
+                <span className="text-sm text-gray-900">Accepted and Agreed</span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {submission.submittedAt && new Date(submission.submittedAt).toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Privacy Policy</label>
+              <div className="flex items-center space-x-2">
+                <ApperIcon name="CheckSquare" className="h-5 w-5 text-success" />
+                <span className="text-sm text-gray-900">Accepted and Agreed</span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {submission.submittedAt && new Date(submission.submittedAt).toLocaleString()}
+              </p>
+            </div>
+          </div>
+
+          {/* AML Compliance */}
+          <div className="bg-blue-50 rounded-lg p-6">
+            <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center space-x-2">
+              <ApperIcon name="Shield" className="h-5 w-5 text-blue-600" />
+              <span>Anti-Money Laundering (AML) Compliance</span>
+            </h4>
+            <div className="space-y-2">
+              <div className="flex items-start space-x-3">
+                <ApperIcon name="CheckCircle" className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-gray-700">
+                  I acknowledge that this service is subject to Anti-Money Laundering regulations.
+                </p>
+              </div>
+              <div className="flex items-start space-x-3">
+                <ApperIcon name="CheckCircle" className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-gray-700">
+                  I understand that my information may be shared with relevant authorities for compliance purposes.
+                </p>
+              </div>
+              <div className="flex items-start space-x-3">
+                <ApperIcon name="CheckCircle" className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-gray-700">
+                  I confirm that the source of funds and business activities are legitimate.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Submission Confirmation */}
+          <div className="border-t pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-md font-medium text-gray-800">Submission Confirmation</h4>
+                <p className="text-sm text-gray-600 mt-1">
+                  This KYC application was submitted on {submission.submittedAt && new Date(submission.submittedAt).toLocaleString()}
+                </p>
+              </div>
+              <div className="text-right">
+                <Badge variant="primary" size="sm">Digitally Signed</Badge>
+                <p className="text-xs text-gray-500 mt-1">
+                  Customer ID: {submission.personalDetails?.mobile || 'N/A'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Digital Consent */}
+          <div className="bg-green-50 rounded-lg p-4">
+            <div className="flex items-center space-x-3">
+              <ApperIcon name="Fingerprint" className="h-6 w-6 text-green-600" />
+              <div>
+                <h4 className="text-sm font-medium text-green-800">Digital Consent Recorded</h4>
+                <p className="text-xs text-green-600">
+                  Customer consent was digitally captured and securely stored in compliance with data protection regulations.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
       {/* Approval Modal */}
       {showApprovalModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
