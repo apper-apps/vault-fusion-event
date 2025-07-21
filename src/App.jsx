@@ -1,6 +1,11 @@
-import React from 'react'
+import React from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { ToastContainer } from 'react-toastify'
+import { ToastContainer } from "react-toastify";
+import SelfKYC from "@/components/pages/SelfKYC";
+import eKYC from "@/components/pages/eKYC";
+import OTPConversion from "@/components/pages/OTPConversion";
+import DocumentVerification from "@/components/pages/DocumentVerification";
+import CAFForm from "@/components/pages/CAFForm";
 import Layout from "@/components/organisms/Layout";
 import AdminDashboard from "@/components/pages/AdminDashboard";
 import KYCWizard from "@/components/pages/KYCWizard";
@@ -17,12 +22,17 @@ return (
     <BrowserRouter>
       <div className="min-h-screen bg-surface">
         <Routes>
-          <Route path="/" element={<Layout userRole={userRole} />}>
+<Route path="/" element={<Layout userRole={userRole} />}>
             {userRole === 'customer' ? (
               <>
-<Route index element={<Navigate to="/dashboard" replace />} />
+                <Route index element={<Navigate to="/dashboard" replace />} />
                 <Route path="dashboard" element={<CustomerDashboard />} />
                 <Route path="kyc-submit" element={<KYCWizard />} />
+                <Route path="self-kyc" element={<SelfKYC />} />
+                <Route path="e-kyc" element={<eKYC />} />
+                <Route path="otp-conversion" element={<OTPConversion />} />
+                <Route path="doc-verification" element={<DocumentVerification />} />
+                <Route path="caf-form" element={<CAFForm />} />
                 <Route path="documents" element={<DocumentManager />} />
               </>
             ) : (

@@ -215,5 +215,320 @@ export const validateSelfKYCForm = (formData) => {
   return {
     isValid: Object.keys(errors).length === 0,
     errors
+};
+};
+
+// UIDAI and DigiLocker specific validators
+export const validateUIDAIResponse = (response) => {
+  if (!response || typeof response !== 'object') {
+    return { isValid: false, message: 'Invalid UIDAI response format' };
+  }
+  
+  if (!response.kycData) {
+    return { isValid: false, message: 'KYC data missing from UIDAI response' };
+  }
+  
+  const requiredFields = ['name', 'dateOfBirth', 'gender', 'address'];
+  const missingFields = requiredFields.filter(field => !response.kycData[field]);
+  
+  if (missingFields.length > 0) {
+    return { isValid: false, message: `Missing required fields: ${missingFields.join(', ')}` };
+  }
+  
+  return { isValid: true };
+};
+
+export const validateDigiLockerDocument = (document) => {
+  if (!document || typeof document !== 'object') {
+    return { isValid: false, message: 'Invalid document format' };
+  }
+  
+  const requiredFields = ['id', 'name', 'type', 'issuer'];
+  const missingFields = requiredFields.filter(field => !document[field]);
+  
+  if (missingFields.length > 0) {
+    return { isValid: false, message: `Missing document fields: ${missingFields.join(', ')}` };
+  }
+  
+  return { isValid: true };
+};
+
+// Conversion validators
+export const validateConversionPlan = (planId, availablePlans) => {
+  if (!planId) {
+    return { isValid: false, message: 'Plan selection is required' };
+  }
+  
+  if (!availablePlans || !Array.isArray(availablePlans)) {
+    return { isValid: false, message: 'Available plans data is invalid' };
+  }
+  
+  const selectedPlan = availablePlans.find(plan => plan.Id === planId);
+  if (!selectedPlan) {
+    return { isValid: false, message: 'Selected plan not found' };
+  }
+  
+  return { isValid: true, plan: selectedPlan };
+};
+
+export const validateConversionEligibility = (eligibilityData) => {
+  if (!eligibilityData) {
+    return { isValid: false, message: 'Eligibility data is required' };
+  }
+  
+  if (!eligibilityData.eligible) {
+    return { 
+      isValid: false, 
+      message: eligibilityData.reason || 'Not eligible for conversion' 
+    };
+  }
+  
+  return { isValid: true };
+};
+
+// CAF form validators
+export const validateCAFPersonalDetails = (personalDetails) => {
+  const errors = {};
+  
+  if (!validateRequired(personalDetails.fullName)) {
+    errors.fullName = 'Full name is required';
+  }
+  
+  if (!validateRequired(personalDetails.dateOfBirth)) {
+    errors.dateOfBirth = 'Date of birth is required';
+  }
+  
+  if (!validateRequired(personalDetails.gender)) {
+    errors.gender = 'Gender is required';
+  }
+  
+  if (!validateRequired(personalDetails.mobile)) {
+    errors.mobile = 'Mobile number is required';
+  } else if (!validateMobile(personalDetails.mobile)) {
+    errors.mobile = 'Invalid mobile number format';
+  }
+  
+  if (!validateRequired(personalDetails.email)) {
+    errors.email = 'Email is required';
+  } else if (!validateEmail(personalDetails.email)) {
+    errors.email = 'Invalid email format';
+  }
+  
+  if (!validateRequired(personalDetails.aadhaarNumber)) {
+    errors.aadhaarNumber = 'Aadhaar number is required';
+  } else if (!validateAadhaar(personalDetails.aadhaarNumber)) {
+    errors.aadhaarNumber = 'Invalid Aadhaar number';
+  }
+  
+  if (!validateRequired(personalDetails.panNumber)) {
+    errors.panNumber = 'PAN number is required';
+  } else if (!validatePAN(personalDetails.panNumber)) {
+    errors.panNumber = 'Invalid PAN format';
+  }
+  
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
   };
+};
+
+export const validateCAFAddressDetails = (addressDetails) => {
+  const errors = {};
+  
+  if (!validateRequired(addressDetails.residentialAddress)) {
+    errors.residentialAddress = 'Residential address is required';
+  }
+  
+  if (!validateRequired(addressDetails.permanentAddress)) {
+    errors.permanentAddress = 'Permanent address is required';
+  }
+  
+  if (!validateRequired(addressDetails.city)) {
+    errors.city = 'City is required';
+  }
+  
+  if (!validateRequired(addressDetails.state)) {
+    errors.state = 'State is required';
+  }
+  
+  if (!validateRequired(addressDetails.pincode)) {
+    errors.pincode = 'PIN code is required';
+  } else if (!/^\d{6}$/.test(addressDetails.pincode)) {
+    errors.pincode = 'PIN code must be 6 digits';
+  }
+  
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
+};
+
+export const validateCAFBusinessDetails = (businessDetails, customerType) => {
+  if (customerType === 'individual') {
+    return { isValid: true, errors: {} };
+  }
+  
+  const errors = {};
+  
+  if (!validateRequired(businessDetails.companyName)) {
+    errors.companyName = 'Company name is required';
+  }
+  
+  if (!validateRequired(businessDetails.businessType)) {
+    errors.businessType = 'Business type is required';
+  }
+  
+  if (!validateRequired(businessDetails.gstin)) {
+    errors.gstin = 'GSTIN is required';
+  } else if (!validateGSTIN(businessDetails.gstin)) {
+    errors.gstin = 'Invalid GSTIN format';
+  }
+  
+  if (businessDetails.cin && !validateCIN(businessDetails.cin)) {
+    errors.cin = 'Invalid CIN format';
+  }
+  
+  if (!validateRequired(businessDetails.authorizedSignatory)) {
+    errors.authorizedSignatory = 'Authorized signatory is required';
+  }
+  
+  if (!validateRequired(businessDetails.businessAddress)) {
+    errors.businessAddress = 'Business address is required';
+  }
+  
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
+};
+
+export const validateCAFServiceDetails = (serviceDetails) => {
+  const errors = {};
+  
+  if (!validateRequired(serviceDetails.connectionType)) {
+    errors.connectionType = 'Connection type is required';
+  }
+  
+  if (!validateRequired(serviceDetails.planSelected)) {
+    errors.planSelected = 'Plan selection is required';
+  }
+  
+  if (!validateRequired(serviceDetails.installationAddress)) {
+    errors.installationAddress = 'Installation address is required';
+  }
+  
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
+};
+
+export const validateCAFDeclarations = (declarations) => {
+  const errors = {};
+  
+  if (!declarations.termsAccepted) {
+    errors.termsAccepted = 'Terms and conditions must be accepted';
+  }
+  
+  if (!declarations.kycCompleted) {
+    errors.kycCompleted = 'KYC completion confirmation is required';
+  }
+  
+  if (!declarations.informationAccuracy) {
+    errors.informationAccuracy = 'Information accuracy declaration is required';
+  }
+  
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
+};
+
+export const validateCompleteCAFForm = (formData) => {
+  const errors = {};
+  
+  if (!validateRequired(formData.serviceType)) {
+    errors.serviceType = 'Service type is required';
+  }
+  
+  if (!validateRequired(formData.customerType)) {
+    errors.customerType = 'Customer type is required';
+  }
+  
+  // Validate personal details
+  const personalValidation = validateCAFPersonalDetails(formData.personalDetails || {});
+  if (!personalValidation.isValid) {
+    Object.keys(personalValidation.errors).forEach(key => {
+      errors[`personalDetails.${key}`] = personalValidation.errors[key];
+    });
+  }
+  
+  // Validate address details
+  const addressValidation = validateCAFAddressDetails(formData.addressDetails || {});
+  if (!addressValidation.isValid) {
+    Object.keys(addressValidation.errors).forEach(key => {
+      errors[`addressDetails.${key}`] = addressValidation.errors[key];
+    });
+  }
+  
+  // Validate business details (if business customer)
+  const businessValidation = validateCAFBusinessDetails(
+    formData.businessDetails || {}, 
+    formData.customerType
+  );
+  if (!businessValidation.isValid) {
+    Object.keys(businessValidation.errors).forEach(key => {
+      errors[`businessDetails.${key}`] = businessValidation.errors[key];
+    });
+  }
+  
+  // Validate service details
+  const serviceValidation = validateCAFServiceDetails(formData.serviceDetails || {});
+  if (!serviceValidation.isValid) {
+    Object.keys(serviceValidation.errors).forEach(key => {
+      errors[`serviceDetails.${key}`] = serviceValidation.errors[key];
+    });
+  }
+  
+  // Validate declarations
+  const declarationsValidation = validateCAFDeclarations(formData.declarations || {});
+  if (!declarationsValidation.isValid) {
+    Object.keys(declarationsValidation.errors).forEach(key => {
+      errors[`declarations.${key}`] = declarationsValidation.errors[key];
+    });
+  }
+  
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
+};
+
+// Service type validators
+export const validateServiceType = (serviceType) => {
+  const validServiceTypes = ['new_connection', 'plan_change', 'additional_service', 'upgrade_service'];
+  
+  if (!serviceType) {
+    return { isValid: false, message: 'Service type is required' };
+  }
+  
+  if (!validServiceTypes.includes(serviceType)) {
+    return { isValid: false, message: 'Invalid service type' };
+  }
+  
+  return { isValid: true };
+};
+
+export const validateConnectionType = (connectionType) => {
+  const validConnectionTypes = ['postpaid', 'prepaid', 'hybrid'];
+  
+  if (!connectionType) {
+    return { isValid: false, message: 'Connection type is required' };
+  }
+  
+  if (!validConnectionTypes.includes(connectionType)) {
+    return { isValid: false, message: 'Invalid connection type' };
+  }
+  
+  return { isValid: true };
 };

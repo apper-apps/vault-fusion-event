@@ -257,6 +257,141 @@ return stats;
     
 return cloneData(this.data[index]);
   }
+
+  // e-KYC specific operations
+  async initiateEKYC(aadhaarNumber) {
+    await delay(500);
+    
+    if (!aadhaarNumber || aadhaarNumber.length !== 12) {
+      throw new Error('Invalid Aadhaar number');
+    }
+    
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    this.otpStorage = this.otpStorage || {};
+    this.otpStorage[aadhaarNumber] = {
+      otp,
+      type: 'e-kyc',
+      expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes
+      attempts: 0
+    };
+    
+    return {
+      success: true,
+      message: 'OTP sent to registered mobile number',
+      debugOTP: otp
+    };
+  }
+
+  async verifyEKYCOTP(aadhaarNumber, enteredOTP) {
+    await delay(800);
+    
+    const otpData = this.otpStorage?.[aadhaarNumber];
+    
+    if (!otpData) {
+      throw new Error('OTP not found or expired. Please request a new OTP.');
+    }
+    
+    if (Date.now() > otpData.expiresAt) {
+      delete this.otpStorage[aadhaarNumber];
+      throw new Error('OTP has expired. Please request a new OTP.');
+    }
+    
+    otpData.attempts++;
+    
+    if (otpData.attempts > 3) {
+      delete this.otpStorage[aadhaarNumber];
+      throw new Error('Too many failed attempts. Please request a new OTP.');
+    }
+    
+    if (otpData.otp !== enteredOTP) {
+      throw new Error('Invalid OTP. Please check and try again.');
+    }
+    
+    // Generate mock e-KYC data
+    delete this.otpStorage[aadhaarNumber];
+    
+    const ekycData = {
+      name: 'Rahul Kumar',
+      dateOfBirth: '1990-05-15',
+      gender: 'Male',
+      address: 'House No. 123, Sector 15, Noida, Uttar Pradesh',
+      mobile: '9876543210',
+      email: 'rahul@example.com',
+      aadhaarNumber: aadhaarNumber,
+      verifiedAt: new Date().toISOString()
+    };
+    
+    return {
+      success: true,
+      message: 'e-KYC verification successful',
+      kycData: ekycData
+    };
+  }
+
+  // OTP-based conversion operations
+  async checkConversionEligibility(mobileNumber) {
+    await delay(400);
+    
+    const mockEligibility = {
+      eligible: true,
+      currentPlan: 'Prepaid Unlimited',
+      accountAge: 180,
+      outstandingAmount: 0
+    };
+    
+    return mockEligibility;
+  }
+
+  async sendConversionOTP(mobileNumber) {
+    await delay(300);
+    
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    this.otpStorage = this.otpStorage || {};
+    this.otpStorage[mobileNumber] = {
+      otp,
+      type: 'conversion',
+      expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes
+      attempts: 0
+    };
+    
+    return {
+      success: true,
+      message: `OTP sent to ${mobileNumber}`,
+      debugOTP: otp
+    };
+  }
+
+  // Document verification operations  
+  async verifyDocumentWithDigiLocker(documentType) {
+    await delay(600);
+    
+    const mockVerification = {
+      type: documentType,
+      verified: true,
+      issuer: 'Government Authority',
+      verifiedAt: new Date().toISOString()
+    };
+    
+    return mockVerification;
+  }
+
+  // CAF operations
+  async generateCAF(formData) {
+    await delay(600);
+    
+    const cafId = `CAF${Date.now()}`;
+    const cafRecord = {
+      Id: this.data.length + 1,
+      cafId,
+      formData,
+      status: 'generated',
+      generatedAt: new Date().toISOString()
+    };
+    
+    return cafRecord;
+  }
 }
 
 // Create and export singleton instance
