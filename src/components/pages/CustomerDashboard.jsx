@@ -93,11 +93,11 @@ const CustomerDashboard = () => {
 
   const statusInfo = getStatusInfo();
 
-  return (
-    <div className="space-y-8">
+return (
+    <div className="space-y-8 pointer-events-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between pointer-events-auto">
+        <div className="pointer-events-auto">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
             Welcome to KYC Portal
           </h1>
@@ -106,27 +106,29 @@ const CustomerDashboard = () => {
           </p>
         </div>
         
-        <Button variant="secondary" icon="HelpCircle" size="lg">
+        <Button variant="secondary" icon="HelpCircle" size="lg" className="pointer-events-auto min-h-[44px] min-w-[44px]">
           Help & Support
         </Button>
       </div>
 
-      {/* KYC Status Card */}
-      <StatusCard
-        status={statusInfo.status}
-        onAction={statusInfo.status === 'not-submitted' ? handleStartKYC : handleViewStatus}
-        lastUpdated={statusInfo.lastUpdated}
-        nextSteps={statusInfo.nextSteps}
-      />
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+{/* KYC Status Card */}
+      <div className="pointer-events-auto">
+        <StatusCard
+          status={statusInfo.status}
+          onAction={statusInfo.status === 'not-submitted' ? handleStartKYC : handleViewStatus}
+          lastUpdated={statusInfo.lastUpdated}
+          nextSteps={statusInfo.nextSteps}
+        />
+      </div>
+{/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pointer-events-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+          className="pointer-events-auto"
         >
-          <Card className="text-center">
+          <Card className="text-center pointer-events-auto cursor-default hover:shadow-elevation-2 transition-shadow">
             <div className="p-4 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl w-fit mx-auto mb-4">
               <ApperIcon name="FileCheck" className="h-8 w-8 text-blue-600" />
             </div>
@@ -137,13 +139,13 @@ const CustomerDashboard = () => {
             <p className="text-sm text-gray-500 mt-1">Files uploaded</p>
           </Card>
         </motion.div>
-
-        <motion.div
+<motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+          className="pointer-events-auto"
         >
-          <Card className="text-center">
+          <Card className="text-center pointer-events-auto cursor-default hover:shadow-elevation-2 transition-shadow">
             <div className="p-4 bg-gradient-to-br from-green-100 to-emerald-200 rounded-xl w-fit mx-auto mb-4">
               <ApperIcon name="Clock" className="h-8 w-8 text-emerald-600" />
             </div>
@@ -157,8 +159,9 @@ const CustomerDashboard = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
+          className="pointer-events-auto"
         >
-          <Card className="text-center">
+          <Card className="text-center pointer-events-auto cursor-default hover:shadow-elevation-2 transition-shadow">
             <div className="p-4 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl w-fit mx-auto mb-4">
               <ApperIcon name="Shield" className="h-8 w-8 text-purple-600" />
             </div>
@@ -169,15 +172,14 @@ const CustomerDashboard = () => {
         </motion.div>
       </div>
 
-      {/* Requirements Overview */}
-      <Card>
-        <div className="flex items-center space-x-3 mb-6">
+{/* Requirements Overview */}
+      <Card className="pointer-events-auto">
+        <div className="flex items-center space-x-3 mb-6 pointer-events-auto">
           <ApperIcon name="ListChecks" className="h-6 w-6 text-primary-600" />
           <h3 className="text-xl font-semibold text-gray-900">Required Documents</h3>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 pointer-events-auto">
+          <div className="space-y-4 pointer-events-auto">
             <h4 className="font-medium text-gray-800">Personal Documents</h4>
             <div className="space-y-3">
               {[
@@ -185,7 +187,7 @@ const CustomerDashboard = () => {
                 { name: 'Aadhaar Card', required: true, uploaded: false },
                 { name: 'Recent Selfie', required: false, uploaded: kycData?.selfieVerification?.selfie?.length > 0 }
               ].map((doc, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg pointer-events-auto cursor-default hover:bg-gray-100 transition-colors min-h-[48px]">
                   <div className="flex items-center space-x-3">
                     <ApperIcon 
                       name={doc.uploaded ? 'CheckCircle' : 'Circle'} 
@@ -200,7 +202,7 @@ const CustomerDashboard = () => {
             </div>
           </div>
 
-          <div className="space-y-4">
+<div className="space-y-4 pointer-events-auto">
             <h4 className="font-medium text-gray-800">Business Documents</h4>
             <div className="space-y-3">
               {[
@@ -209,7 +211,7 @@ const CustomerDashboard = () => {
                 { name: 'Address Proof', required: true, uploaded: kycData?.businessDetails?.addressProof?.length > 0 },
                 { name: 'Authorization Letter', required: true, uploaded: kycData?.authorizedSignatory?.authorizationLetter?.length > 0 }
               ].map((doc, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg pointer-events-auto cursor-default hover:bg-gray-100 transition-colors min-h-[48px]">
                   <div className="flex items-center space-x-3">
                     <ApperIcon 
                       name={doc.uploaded ? 'CheckCircle' : 'Circle'} 
@@ -227,15 +229,15 @@ const CustomerDashboard = () => {
       </Card>
 
       {/* Recent Activity */}
-      {kycData && (
-        <Card>
-          <div className="flex items-center space-x-3 mb-6">
+{kycData && (
+        <Card className="pointer-events-auto">
+          <div className="flex items-center space-x-3 mb-6 pointer-events-auto">
             <ApperIcon name="Activity" className="h-6 w-6 text-primary-600" />
             <h3 className="text-xl font-semibold text-gray-900">Recent Activity</h3>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4 p-4 bg-blue-50 rounded-lg">
+          <div className="space-y-4 pointer-events-auto">
+            <div className="flex items-center space-x-4 p-4 bg-blue-50 rounded-lg pointer-events-auto cursor-default hover:bg-blue-100 transition-colors min-h-[56px]">
               <div className="p-2 bg-blue-100 rounded-full">
                 <ApperIcon name="Upload" className="h-4 w-4 text-blue-600" />
               </div>
