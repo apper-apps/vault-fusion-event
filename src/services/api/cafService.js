@@ -324,17 +324,7 @@ class CAFService {
       generatedAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutes
     };
-  }
-
-  async getCAFTemplate(customerType) {
-    await delay(100);
-    
-    if (!this.templates[customerType]) {
-      throw new Error(`Template for customer type '${customerType}' not found`);
-    }
-    
-    return cloneData(this.templates[customerType]);
-  }
+}
 
   async updateCAFRecord(id, updateData) {
     await delay(250);
