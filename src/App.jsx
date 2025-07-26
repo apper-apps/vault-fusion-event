@@ -4,7 +4,6 @@ import { ToastContainer } from "react-toastify";
 import SelfKYC from "@/components/pages/SelfKYC";
 import eKYC from "@/components/pages/eKYC";
 import OTPConversion from "@/components/pages/OTPConversion";
-import DocumentVerification from "@/components/pages/DocumentVerification";
 import CAFForm from "@/components/pages/CAFForm";
 import Layout from "@/components/organisms/Layout";
 import AdminDashboard from "@/components/pages/AdminDashboard";
@@ -31,7 +30,6 @@ return (
                 <Route path="self-kyc" element={<SelfKYC />} />
                 <Route path="e-kyc" element={<eKYC />} />
                 <Route path="otp-conversion" element={<OTPConversion />} />
-                <Route path="doc-verification" element={<DocumentVerification />} />
                 <Route path="caf-form" element={<CAFForm />} />
                 <Route path="documents" element={<DocumentManager />} />
               </>
