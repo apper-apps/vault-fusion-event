@@ -8,7 +8,6 @@ import CAFForm from "@/components/pages/CAFForm";
 import Layout from "@/components/organisms/Layout";
 import AdminDashboard from "@/components/pages/AdminDashboard";
 import KYCWizard from "@/components/pages/KYCWizard";
-import DocumentManager from "@/components/pages/DocumentManager";
 import CustomerDashboard from "@/components/pages/CustomerDashboard";
 import Reports from "@/components/pages/Reports";
 import Settings from "@/components/pages/Settings";
@@ -31,14 +30,12 @@ return (
                 <Route path="e-kyc" element={<eKYC />} />
                 <Route path="otp-conversion" element={<OTPConversion />} />
                 <Route path="caf-form" element={<CAFForm />} />
-                <Route path="documents" element={<DocumentManager />} />
               </>
             ) : (
               <>
                 <Route index element={<Navigate to="/admin" replace />} />
 <Route path="admin" element={<AdminDashboard />} />
                 <Route path="admin/review/:id" element={<ReviewDetails />} />
-                <Route path="admin/documents" element={<DocumentManager />} />
                 <Route path="admin/reports" element={<Reports />} />
                 <Route path="admin/settings" element={<Settings />} />
               </>
