@@ -18,11 +18,21 @@ class UIDAIService {
     return this.idCounter++;
   }
 
-  async initiateEKYC(aadhaarNumber) {
-    await delay(500);
+async initiateEKYC(aadhaarNumber) {
+    await delay(300); // Faster initiation
     
-    if (!aadhaarNumber || aadhaarNumber.length !== 12) {
-      throw new Error('Invalid Aadhaar number');
+    const cleanAadhaar = aadhaarNumber?.replace(/\D/g, '') || '';
+    
+    if (!cleanAadhaar) {
+      throw new Error('Please enter your 12-digit Aadhaar number');
+    }
+    
+    if (cleanAadhaar.length !== 12) {
+      throw new Error(`Aadhaar number must be exactly 12 digits (you entered ${cleanAadhaar.length})`);
+    }
+    
+    if (!/^\d{12}$/.test(cleanAadhaar)) {
+      throw new Error('Aadhaar number should contain only digits (0-9)');
     }
     
     // Simulate UIDAI API call
@@ -45,29 +55,40 @@ class UIDAIService {
     };
   }
 
-  async verifyEKYCOTP(aadhaarNumber, enteredOTP) {
-    await delay(800);
+async verifyEKYCOTP(aadhaarNumber, enteredOTP) {
+    await delay(500); // Faster verification
     
-    const otpData = this.otpStorage[aadhaarNumber];
+    const cleanAadhaar = aadhaarNumber?.replace(/\D/g, '') || '';
+    const cleanOTP = enteredOTP?.replace(/\D/g, '') || '';
     
-    if (!otpData) {
-      throw new Error('OTP not found or expired. Please request a new OTP.');
+    if (!cleanOTP || cleanOTP.length !== 6) {
+      throw new Error('Please enter the complete 6-digit OTP sent to your Aadhaar-registered mobile');
     }
     
-    if (Date.now() > otpData.expiresAt) {
-      delete this.otpStorage[aadhaarNumber];
-      throw new Error('OTP has expired. Please request a new OTP.');
+    const otpData = this.otpStorage[cleanAadhaar];
+    
+    if (!otpData) {
+      throw new Error('OTP session not found. Please start the e-KYC process again to get a new OTP.');
+    }
+    
+    const timeRemaining = otpData.expiresAt - Date.now();
+    if (timeRemaining <= 0) {
+      delete this.otpStorage[cleanAadhaar];
+      throw new Error('Your OTP has expired. Please restart the e-KYC process to get a fresh verification code.');
     }
     
     otpData.attempts++;
     
     if (otpData.attempts > 3) {
-      delete this.otpStorage[aadhaarNumber];
-      throw new Error('Too many failed attempts. Please request a new OTP.');
+      delete this.otpStorage[cleanAadhaar];
+      throw new Error('Maximum verification attempts exceeded for security. Please restart the e-KYC process.');
     }
     
-    if (otpData.otp !== enteredOTP) {
-      throw new Error('Invalid OTP. Please check and try again.');
+    if (otpData.otp !== cleanOTP) {
+      const remainingAttempts = 3 - otpData.attempts;
+      const minutesRemaining = Math.ceil(timeRemaining / 60000);
+      
+      throw new Error(`Incorrect OTP. ${remainingAttempts} attempt${remainingAttempts !== 1 ? 's' : ''} remaining. OTP expires in ${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''}.`);
     }
     
     // OTP verified successfully, generate mock KYC data

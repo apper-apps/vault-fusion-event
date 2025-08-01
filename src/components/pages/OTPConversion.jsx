@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { toast } from 'react-toastify';
-import Card from '@/components/atoms/Card';
-import Button from '@/components/atoms/Button';
-import Input from '@/components/atoms/Input';
-import Badge from '@/components/atoms/Badge';
-import Loading from '@/components/ui/Loading';
-import Error from '@/components/ui/Error';
-import ApperIcon from '@/components/ApperIcon';
-import { conversionService } from '@/services/api/conversionService';
-import { validateMobile, validateOTP } from '@/utils/validators';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+import conversionService from "@/services/api/conversionService";
+import ApperIcon from "@/components/ApperIcon";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
+import Badge from "@/components/atoms/Badge";
+import Input from "@/components/atoms/Input";
+import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
+import { validateMobile, validateOTP } from "@/utils/validators";
 
 const OTPConversion = () => {
   const navigate = useNavigate();
@@ -75,13 +75,16 @@ const OTPConversion = () => {
       toast.success('OTP sent to your registered mobile number');
       
     } catch (err) {
-      setError(err.message || 'Failed to check eligibility');
-      toast.error(err.message || 'Failed to check eligibility');
+      const errorMessage = err.message || 'Unable to check conversion eligibility. Please verify your mobile number and try again.';
+      setError(errorMessage);
+      toast.error(errorMessage, {
+        duration: 5000,
+        icon: err.code === 'NETWORK_ERROR' ? '📡' : '⚠️'
+      });
     } finally {
       setLoading(false);
     }
   };
-
   const handleOTPVerification = async () => {
     try {
       if (!validateOTP(formData.otp)) {
@@ -98,8 +101,27 @@ const OTPConversion = () => {
       toast.success('Mobile number verified successfully');
       
     } catch (err) {
-      setError(err.message || 'OTP verification failed');
-      toast.error(err.message || 'OTP verification failed');
+let errorMessage = 'OTP verification failed';
+      let toastIcon = '⚠️';
+      
+      if (err.code === 'INVALID_OTP') {
+        errorMessage = err.message || 'Invalid OTP. Please check the 6-digit code and try again.';
+        toastIcon = '🔢';
+      } else if (err.code === 'OTP_EXPIRED') {
+        errorMessage = 'OTP has expired. Please request a new verification code.';
+        toastIcon = '⏰';
+      } else if (err.code === 'MAX_ATTEMPTS_EXCEEDED') {
+        errorMessage = 'Too many incorrect attempts. Please request a new OTP.';
+        toastIcon = '🚫';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
+      toast.error(errorMessage, {
+        duration: err.code === 'MAX_ATTEMPTS_EXCEEDED' ? 8000 : 5000,
+        icon: toastIcon
+      });
     } finally {
       setLoading(false);
     }
@@ -132,8 +154,12 @@ const OTPConversion = () => {
         navigate('/dashboard');
       }, 2000);
       
-    } catch (err) {
-      toast.error(err.message || 'Failed to process conversion');
+} catch (err) {
+      const errorMessage = err.message || 'Conversion processing failed. Please try again or contact support.';
+      toast.error(errorMessage, {
+        duration: 6000,
+        icon: '⚠️'
+      });
     } finally {
       setLoading(false);
     }
@@ -217,8 +243,8 @@ const OTPConversion = () => {
         )}
 
         <div className="max-w-sm mx-auto">
-          <Input
-            label="Enter OTP"
+<Input
+            label="Enter 6-digit OTP"
             value={formData.otp}
             onChange={(e) => updateFormData('otp', e.target.value.replace(/\D/g, ''))}
             required
@@ -443,12 +469,19 @@ const OTPConversion = () => {
     }
   };
 
-  if (loading && currentStep === 0) {
+if (loading && currentStep === 0) {
     return <Loading type="cards" />;
   }
 
   if (error && currentStep === 0) {
-    return <Error message={error} onRetry={() => setError('')} />;
+    return <Error 
+      title="Eligibility Check Failed" 
+      message={error} 
+      onRetry={() => {
+        setError('');
+        setLoading(false);
+      }} 
+    />;
   }
 
   return (

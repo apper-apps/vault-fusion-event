@@ -130,44 +130,58 @@ async create(submissionData) {
     const cacheKey = this.generateCacheKey('create', submissionData);
     
     return this.deduplicateRequest(cacheKey, async () => {
-      await delay(500);
+      await delay(300); // Faster response time
       
-      // Enhanced validation with detailed error messages
+      // Enhanced validation with detailed, actionable error messages
       const validationErrors = [];
       
       if (!submissionData.userId) {
-        validationErrors.push('User identification is required to process KYC submission');
+        validationErrors.push('User session expired. Please refresh the page and try again.');
       }
       
       if (!submissionData.personalDetails) {
-        validationErrors.push('Personal details section is mandatory');
+        validationErrors.push('Personal details are required. Please complete the first step.');
       } else {
-        if (!submissionData.personalDetails.fullName) {
-          validationErrors.push('Full name is required in personal details');
+        if (!submissionData.personalDetails.fullName || submissionData.personalDetails.fullName.trim().length < 2) {
+          validationErrors.push('Please enter your complete full name (minimum 2 characters)');
         }
         if (!submissionData.personalDetails.mobile) {
-          validationErrors.push('Mobile number is required in personal details');
+          validationErrors.push('Mobile number is required for verification and updates');
+        } else if (!/^[6-9]\d{9}$/.test(submissionData.personalDetails.mobile.replace(/\D/g, ''))) {
+          validationErrors.push('Please enter a valid 10-digit Indian mobile number');
+        }
+        if (!submissionData.personalDetails.email) {
+          validationErrors.push('Email address is required for application updates');
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(submissionData.personalDetails.email)) {
+          validationErrors.push('Please enter a valid email address');
         }
       }
       
       if (!submissionData.businessDetails) {
-        validationErrors.push('Business details section is mandatory');
+        validationErrors.push('Business details are required. Please complete the second step.');
       } else {
         if (!submissionData.businessDetails.companyName) {
-          validationErrors.push('Company name is required in business details');
+          validationErrors.push('Company name is required as per GST registration');
+        }
+        if (!submissionData.businessDetails.gstin) {
+          validationErrors.push('GSTIN is mandatory for business verification');
         }
       }
       
+      if (!submissionData.documents || submissionData.documents.length === 0) {
+        validationErrors.push('At least one document upload is required for verification');
+      }
+      
       if (validationErrors.length > 0) {
-        const error = new Error(`Validation failed: ${validationErrors.join('; ')}`);
+        const error = new Error(validationErrors.length === 1 ? validationErrors[0] : `Please fix ${validationErrors.length} issues:\n• ${validationErrors.join('\n• ')}`);
         error.code = 'VALIDATION_ERROR';
         error.details = validationErrors;
         throw error;
       }
       
-      // Simulate potential network issues
-      if (Math.random() < 0.1) {
-        const error = new Error(ERROR_MESSAGES.NETWORK_ERROR);
+      // Simulate potential network issues with lower probability
+      if (Math.random() < 0.03) { // Reduced from 0.1 to 0.03
+        const error = new Error('Connection timeout. Please check your internet and try again.');
         error.code = 'NETWORK_ERROR';
         throw error;
       }
@@ -180,7 +194,9 @@ async create(submissionData) {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         submissionId: `KYC${Date.now()}${Math.floor(Math.random() * 1000)}`,
-        status: submissionData.status || 'pending'
+        status: submissionData.status || 'pending',
+        processingStage: 'document_review',
+        estimatedCompletionTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString() // 2 days
       };
       
       this.data.push(newSubmission);
@@ -192,29 +208,29 @@ async update(id, updatedData) {
     const cacheKey = this.generateCacheKey('update', { id, updatedData });
     
     return this.deduplicateRequest(cacheKey, async () => {
-      await delay(400);
+      await delay(250); // Faster response
       
-      // Enhanced ID validation
+      // Enhanced ID validation with clearer messages
       if (!Number.isInteger(id) || id <= 0) {
-        const error = new Error('Invalid submission ID. Please provide a valid positive integer.');
+        const error = new Error('Invalid submission reference. Please refresh the page and try again.');
         error.code = 'VALIDATION_ERROR';
         throw error;
       }
       
       const index = this.data.findIndex(submission => submission.Id === id);
       if (index === -1) {
-        const error = new Error(`KYC submission not found. No record exists with ID ${id}.`);
+        const error = new Error(`Submission not found. This application may have been removed or archived.`);
         error.code = 'NOT_FOUND';
         throw error;
       }
       
       const currentSubmission = this.data[index];
       
-      // Enhanced status transition validation
+      // Enhanced status transition validation with user-friendly messages
       if (updatedData.status) {
         const validStatuses = ['pending', 'approved', 'rejected', 'under-review', 'pending-verification'];
         if (!validStatuses.includes(updatedData.status)) {
-          const error = new Error(`Invalid status transition. Status '${updatedData.status}' is not allowed. Valid statuses: ${validStatuses.join(', ')}`);
+          const error = new Error(`Invalid status update. Please contact support if this error persists.`);
           error.code = 'VALIDATION_ERROR';
           throw error;
         }
@@ -233,26 +249,44 @@ async update(id, updatedData) {
                                 currentSubmission.status === updatedData.status;
         
         if (!isValidTransition && currentSubmission.status !== 'pending') {
-          const error = new Error(`Status cannot be changed from '${currentSubmission.status}' to '${updatedData.status}'. Allowed transitions: ${allowedTransitions.join(', ') || 'none'}`);
+          let friendlyMessage = 'This application cannot be updated at this time.';
+          
+          if (currentSubmission.status === 'approved') {
+            friendlyMessage = 'This application has already been approved and cannot be modified.';
+          } else if (currentSubmission.status === 'rejected' && updatedData.status !== 'pending') {
+            friendlyMessage = 'Rejected applications can only be resubmitted for review.';
+          }
+          
+          const error = new Error(friendlyMessage);
           error.code = 'INVALID_TRANSITION';
           throw error;
         }
       }
       
-      // Track update history
+      // Track update history with better structure
       const updateHistory = currentSubmission.updateHistory || [];
       updateHistory.push({
         timestamp: new Date().toISOString(),
         changes: updatedData,
-        previousStatus: currentSubmission.status
+        previousStatus: currentSubmission.status,
+        changeType: updatedData.status ? 'status_change' : 'data_update'
       });
+      
+      // Add estimated completion time for status changes
+      let estimatedCompletionTime = currentSubmission.estimatedCompletionTime;
+      if (updatedData.status === 'under-review') {
+        estimatedCompletionTime = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 1 day
+      } else if (updatedData.status === 'pending-verification') {
+        estimatedCompletionTime = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(); // 12 hours
+      }
       
       this.data[index] = { 
         ...currentSubmission, 
         ...updatedData, 
         updatedAt: new Date().toISOString(),
         updateHistory,
-        version: (currentSubmission.version || 1) + 1
+        version: (currentSubmission.version || 1) + 1,
+        estimatedCompletionTime
       };
       
       return cloneData(this.data[index]);
@@ -286,25 +320,25 @@ async update(id, updatedData) {
 
 async approve(id, reviewedBy, comment = '') {
     if (!reviewedBy || reviewedBy.trim() === '') {
-      throw new Error('Reviewer information is required for approval');
+      throw new Error('Admin approval requires reviewer identification for audit trail');
     }
     
     return this.update(id, {
       status: 'approved',
       reviewedBy: reviewedBy.trim(),
       reviewedAt: new Date().toISOString(),
-      reviewComment: comment.trim(),
-      approvalDate: new Date().toISOString()
+      reviewComment: comment.trim() || 'Application approved - all requirements met',
+      approvalDate: new Date().toISOString(),
+      processingStage: 'completed'
     });
   }
-
-  async reject(id, reviewedBy, reason) {
+async reject(id, reviewedBy, reason) {
     if (!reviewedBy || reviewedBy.trim() === '') {
-      throw new Error('Reviewer information is required for rejection');
+      throw new Error('Admin rejection requires reviewer identification for audit trail');
     }
     
-    if (!reason || reason.trim() === '') {
-      throw new Error('Rejection reason is required');
+    if (!reason || reason.trim() === '' || reason.trim().length < 10) {
+      throw new Error('Detailed rejection reason is required (minimum 10 characters) to help applicant understand next steps');
     }
     
     return this.update(id, {
@@ -312,7 +346,10 @@ async approve(id, reviewedBy, comment = '') {
       reviewedBy: reviewedBy.trim(),
       reviewedAt: new Date().toISOString(),
       rejectionReason: reason.trim(),
-      rejectionDate: new Date().toISOString()
+      rejectionDate: new Date().toISOString(),
+      processingStage: 'rejected',
+      canResubmit: true,
+      resubmissionGuidelines: 'Please address the issues mentioned in rejection reason and resubmit your application'
     });
   }
 
@@ -327,20 +364,48 @@ return stats;
   }
 
   // Self-KYC specific operations
-  async registerSelfKYC(registrationData) {
-    await delay(500);
+async registerSelfKYC(registrationData) {
+    await delay(300); // Faster processing
     
-    // Validate required fields for Self-KYC
+    // Enhanced validation for Self-KYC with specific error messages
+    const errors = [];
+    
     if (!registrationData.primaryMobile) {
-      throw new Error('Primary mobile number is required');
+      errors.push('Your primary mobile number is required for account verification');
+    } else {
+      const cleanPrimary = registrationData.primaryMobile.replace(/\D/g, '');
+      if (cleanPrimary.length !== 10 || !/^[6789]/.test(cleanPrimary)) {
+        errors.push('Primary mobile must be a valid 10-digit Indian number starting with 6, 7, 8, or 9');
+      }
     }
     
     if (!registrationData.alternateMobile) {
-      throw new Error('Alternate mobile number is required');
+      errors.push('Alternate mobile number is required for Self-KYC verification as per DoT guidelines');
+    } else {
+      const cleanAlternate = registrationData.alternateMobile.replace(/\D/g, '');
+      if (cleanAlternate.length !== 10 || !/^[6789]/.test(cleanAlternate)) {
+        errors.push('Alternate mobile must be a valid 10-digit Indian number starting with 6, 7, 8, or 9');
+      }
+      
+      const cleanPrimary = registrationData.primaryMobile?.replace(/\D/g, '') || '';
+      if (cleanPrimary === cleanAlternate) {
+        errors.push('Alternate mobile number must be different from your primary mobile number');
+      }
+    }
+    
+    if (!registrationData.contactName || registrationData.contactName.trim().length < 2) {
+      errors.push('Please provide the full name of the alternate contact person (minimum 2 characters)');
     }
     
     if (!registrationData.relationship) {
-      throw new Error('Relationship with alternate contact is required');
+      errors.push('Please specify your relationship with the alternate contact person');
+    }
+    
+    if (errors.length > 0) {
+      const error = new Error(errors.length === 1 ? errors[0] : `Please fix the following:\n• ${errors.join('\n• ')}`);
+      error.code = 'VALIDATION_ERROR';
+      error.details = errors;
+      throw error;
     }
     
     // Find highest existing Id and add 1
@@ -352,7 +417,9 @@ return stats;
       status: 'pending-verification',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      otpVerified: false
+      otpVerified: false,
+      processingStage: 'mobile_verification',
+      estimatedCompletionTime: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutes
     };
     
     this.data.push(newRegistration);
@@ -363,29 +430,37 @@ async sendOTP(mobile, type = 'registration') {
     const cacheKey = this.generateCacheKey('sendOTP', { mobile, type });
     
     return this.deduplicateRequest(cacheKey, async () => {
-      await delay(200);
+      await delay(150); // Faster OTP delivery
       
-      // Enhanced mobile validation
-      const mobileRegex = /^(\+91[-\s]?)?[0]?(91)?[6789]\d{9}$/;
-      if (!mobileRegex.test(mobile.replace(/\s/g, ''))) {
-        const error = new Error('Invalid mobile number format. Please enter a valid 10-digit Indian mobile number.');
+      // Enhanced mobile validation with specific error messages
+      const cleanMobile = mobile.replace(/\D/g, '');
+      
+      if (!cleanMobile || cleanMobile.length !== 10) {
+        const error = new Error('Please enter exactly 10 digits for your mobile number (without +91 or spaces)');
         error.code = 'VALIDATION_ERROR';
         throw error;
       }
       
-      // Rate limiting check
-      const rateLimitKey = `otp_${mobile}`;
-      const lastOTPTime = this.rateLimiter?.get(rateLimitKey);
-      const cooldownPeriod = 60000; // 1 minute
-      
-      if (lastOTPTime && Date.now() - lastOTPTime < cooldownPeriod) {
-        const remainingTime = Math.ceil((cooldownPeriod - (Date.now() - lastOTPTime)) / 1000);
-        const error = new Error(`Please wait ${remainingTime} seconds before requesting another OTP.`);
-        error.code = 'RATE_LIMIT';
+      if (!/^[6789]/.test(cleanMobile)) {
+        const error = new Error('Indian mobile numbers must start with 6, 7, 8, or 9');
+        error.code = 'VALIDATION_ERROR';
         throw error;
       }
       
-      // Simulate OTP generation with better security
+      // Rate limiting check with better messaging
+      const rateLimitKey = `otp_${cleanMobile}`;
+      const lastOTPTime = this.rateLimiter?.get(rateLimitKey);
+      const cooldownPeriod = 45000; // Reduced to 45 seconds for better UX
+      
+      if (lastOTPTime && Date.now() - lastOTPTime < cooldownPeriod) {
+        const remainingTime = Math.ceil((cooldownPeriod - (Date.now() - lastOTPTime)) / 1000);
+        const error = new Error(`Please wait ${remainingTime} seconds before requesting another OTP to prevent spam`);
+        error.code = 'RATE_LIMIT';
+        error.remainingTime = remainingTime;
+        throw error;
+      }
+      
+      // Generate more secure OTP
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       
       // Store OTP with enhanced metadata
@@ -395,30 +470,34 @@ async sendOTP(mobile, type = 'registration') {
       // Clean up expired OTPs
       this.cleanupExpiredOTPs();
       
-      this.otpStorage[mobile] = {
+      this.otpStorage[cleanMobile] = {
         otp,
         type,
         expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes
         attempts: 0,
         generatedAt: Date.now(),
         lastAttemptAt: null,
-        maxAttempts: 3
+        maxAttempts: 3,
+        mobile: cleanMobile
       };
       
       this.rateLimiter.set(rateLimitKey, Date.now());
       
-      // Simulate network failure occasionally
-      if (Math.random() < 0.05) {
-        const error = new Error(ERROR_MESSAGES.NETWORK_ERROR);
+      // Simulate network failure with very low probability
+      if (Math.random() < 0.01) {
+        const error = new Error('Network connection issue. Please check your internet and try again.');
         error.code = 'NETWORK_ERROR';
         throw error;
       }
       
+      const maskedMobile = `${cleanMobile.slice(0, 2)}***${cleanMobile.slice(-3)}`;
+      
       return {
         success: true,
-        message: `OTP sent successfully to ${mobile.replace(/(\d{6})\d{4}/, '$1****')}`,
+        message: `📱 OTP sent to ${maskedMobile}. It will arrive within 30 seconds.`,
         expiresIn: 300, // 5 minutes in seconds
-        canResendIn: 60, // 1 minute in seconds
+        canResendIn: 45, // 45 seconds
+        maskedMobile,
         // In development, return OTP for testing
         debugOTP: otp
       };
@@ -437,31 +516,40 @@ async sendOTP(mobile, type = 'registration') {
     });
   }
 
-  async verifyOTP(mobile, enteredOTP) {
+async verifyOTP(mobile, enteredOTP) {
     const cacheKey = this.generateCacheKey('verifyOTP', { mobile, enteredOTP });
     
     return this.executeWithRetry(async () => {
-      await delay(300);
+      await delay(200); // Faster verification
       
-      // Enhanced OTP validation
-      if (!enteredOTP || !/^\d{6}$/.test(enteredOTP)) {
-        const error = new Error('Please enter a valid 6-digit OTP.');
+      // Enhanced OTP validation with specific guidance
+      if (!enteredOTP) {
+        const error = new Error('Please enter the OTP you received via SMS');
         error.code = 'VALIDATION_ERROR';
         throw error;
       }
       
-      const otpData = this.otpStorage?.[mobile];
+      const cleanOTP = enteredOTP.replace(/\D/g, '');
+      if (cleanOTP.length !== 6) {
+        const error = new Error(`Please enter all 6 digits of the OTP (you entered ${cleanOTP.length} digit${cleanOTP.length !== 1 ? 's' : ''})`);
+        error.code = 'VALIDATION_ERROR';
+        throw error;
+      }
+      
+      const cleanMobile = mobile.replace(/\D/g, '');
+      const otpData = this.otpStorage?.[cleanMobile];
       
       if (!otpData) {
-        const error = new Error('No OTP found for this mobile number. Please request a new OTP.');
+        const error = new Error('No OTP session found. Please request a new OTP to continue.');
         error.code = 'OTP_NOT_FOUND';
         throw error;
       }
       
-      // Check expiration
-      if (Date.now() > otpData.expiresAt) {
-        delete this.otpStorage[mobile];
-        const error = new Error('OTP has expired. Please request a new OTP.');
+      // Check expiration with time remaining
+      const timeRemaining = otpData.expiresAt - Date.now();
+      if (timeRemaining <= 0) {
+        delete this.otpStorage[cleanMobile];
+        const error = new Error('Your OTP has expired. Please click "Resend OTP" to get a new verification code.');
         error.code = 'OTP_EXPIRED';
         throw error;
       }
@@ -470,36 +558,48 @@ async sendOTP(mobile, type = 'registration') {
       otpData.attempts++;
       otpData.lastAttemptAt = Date.now();
       
-      // Check max attempts
+      // Check max attempts with clear guidance
       if (otpData.attempts > otpData.maxAttempts) {
-        delete this.otpStorage[mobile];
-        const error = new Error(`Maximum verification attempts exceeded. Please request a new OTP.`);
+        delete this.otpStorage[cleanMobile];
+        const error = new Error('Too many incorrect attempts for security. Please request a new OTP to continue.');
         error.code = 'MAX_ATTEMPTS_EXCEEDED';
         throw error;
       }
       
-      // Verify OTP
-      if (otpData.otp !== enteredOTP) {
+      // Verify OTP with helpful feedback
+      if (otpData.otp !== cleanOTP) {
         const remainingAttempts = otpData.maxAttempts - otpData.attempts;
-        const error = new Error(`Invalid OTP. ${remainingAttempts} attempt${remainingAttempts !== 1 ? 's' : ''} remaining.`);
+        const minutesRemaining = Math.ceil(timeRemaining / 60000);
+        
+        let message = `Incorrect OTP. Please check your SMS and try again.`;
+        if (remainingAttempts === 1) {
+          message += ` This is your last attempt before needing to request a new OTP.`;
+        } else {
+          message += ` ${remainingAttempts} attempts remaining.`;
+        }
+        message += ` (OTP expires in ${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''})`;
+        
+        const error = new Error(message);
         error.code = 'INVALID_OTP';
         error.remainingAttempts = remainingAttempts;
+        error.timeRemaining = minutesRemaining;
         throw error;
       }
       
       // OTP verified successfully
+      const verificationTime = Math.round((Date.now() - otpData.generatedAt) / 1000);
       const verificationResult = {
-        mobile,
+        mobile: cleanMobile,
         type: otpData.type,
         verifiedAt: new Date().toISOString(),
-        timeToVerify: Date.now() - otpData.generatedAt
+        timeToVerify: verificationTime
       };
       
-      delete this.otpStorage[mobile];
+      delete this.otpStorage[cleanMobile];
       
       return {
         success: true,
-        message: 'OTP verified successfully!',
+        message: `✅ Mobile number verified successfully in ${verificationTime}s!`,
         verificationDetails: verificationResult
       };
     });

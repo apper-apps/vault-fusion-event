@@ -59,12 +59,21 @@ class ConversionService {
   }
 
   async checkEligibility(mobileNumber) {
-    await delay(400);
+await delay(200); // Faster eligibility check
     
-    if (!mobileNumber || mobileNumber.length !== 10) {
-      throw new Error('Invalid mobile number');
+    const cleanMobile = mobileNumber?.replace(/\D/g, '') || '';
+    
+    if (!cleanMobile) {
+      throw new Error('Please enter your mobile number to check conversion eligibility');
     }
     
+    if (cleanMobile.length !== 10) {
+      throw new Error(`Mobile number must be exactly 10 digits (you entered ${cleanMobile.length})`);
+    }
+    
+    if (!/^[6789]/.test(cleanMobile)) {
+      throw new Error('Mobile number must start with 6, 7, 8, or 9 for Indian numbers');
+    }
     // Mock eligibility check
     const mockCustomerDatabase = {
       '9876543210': {
@@ -138,12 +147,17 @@ class ConversionService {
   }
 
   async sendConversionOTP(mobileNumber) {
-    await delay(300);
+await delay(200); // Faster OTP delivery
     
-    if (!mobileNumber || mobileNumber.length !== 10) {
-      throw new Error('Invalid mobile number');
+    const cleanMobile = mobileNumber?.replace(/\D/g, '') || '';
+    
+    if (!cleanMobile || cleanMobile.length !== 10) {
+      throw new Error('Please provide a valid 10-digit mobile number for OTP delivery');
     }
     
+    if (!/^[6789]/.test(cleanMobile)) {
+      throw new Error('Please enter a valid Indian mobile number starting with 6, 7, 8, or 9');
+    }
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
     this.otpStorage[mobileNumber] = {
@@ -164,26 +178,37 @@ class ConversionService {
   async verifyConversionOTP(mobileNumber, enteredOTP) {
     await delay(400);
     
-    const otpData = this.otpStorage[mobileNumber];
+const cleanMobile = mobileNumber?.replace(/\D/g, '') || '';
+    const cleanOTP = enteredOTP?.replace(/\D/g, '') || '';
     
-    if (!otpData) {
-      throw new Error('OTP not found or expired. Please request a new OTP.');
+    if (!cleanOTP || cleanOTP.length !== 6) {
+      throw new Error('Please enter the complete 6-digit OTP sent to your mobile');
     }
     
-    if (Date.now() > otpData.expiresAt) {
-      delete this.otpStorage[mobileNumber];
-      throw new Error('OTP has expired. Please request a new OTP.');
+    const otpData = this.otpStorage[cleanMobile];
+    
+    if (!otpData) {
+      throw new Error('OTP session expired or not found. Please request a new OTP to continue with conversion.');
+    }
+    
+    const timeRemaining = otpData.expiresAt - Date.now();
+    if (timeRemaining <= 0) {
+      delete this.otpStorage[cleanMobile];
+      throw new Error('Your OTP has expired. Please click "Send OTP" to get a new verification code.');
     }
     
     otpData.attempts++;
     
     if (otpData.attempts > 3) {
-      delete this.otpStorage[mobileNumber];
-      throw new Error('Too many failed attempts. Please request a new OTP.');
+      delete this.otpStorage[cleanMobile];
+      throw new Error('Too many incorrect attempts for security. Please request a new OTP to continue.');
     }
     
-    if (otpData.otp !== enteredOTP) {
-      throw new Error('Invalid OTP. Please check and try again.');
+    if (otpData.otp !== cleanOTP) {
+      const remainingAttempts = 3 - otpData.attempts;
+      const minutesRemaining = Math.ceil(timeRemaining / 60000);
+      
+      throw new Error(`Incorrect OTP. ${remainingAttempts} attempt${remainingAttempts !== 1 ? 's' : ''} remaining. Code expires in ${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''}.`);
     }
     
     // OTP verified successfully
@@ -197,18 +222,26 @@ class ConversionService {
   }
 
   async processConversion(conversionData) {
-    await delay(800);
+await delay(500); // Faster conversion processing
     
-    // Validate conversion data
-    if (!conversionData.mobileNumber || !conversionData.toPlan) {
-      throw new Error('Mobile number and target plan are required');
+    // Enhanced validation with specific error messages
+    if (!conversionData.mobileNumber) {
+      throw new Error('Mobile number is required to process the conversion');
+    }
+    
+    if (!conversionData.toPlan) {
+      throw new Error('Please select a postpaid plan to convert to');
+    }
+    
+    const cleanMobile = conversionData.mobileNumber.replace(/\D/g, '');
+    if (cleanMobile.length !== 10) {
+      throw new Error('Please provide a valid 10-digit mobile number for conversion');
     }
     
     const selectedPlan = this.postpaidPlans.find(plan => plan.Id === conversionData.toPlan);
     if (!selectedPlan) {
-      throw new Error('Selected plan not found');
+      throw new Error('Selected plan is no longer available. Please choose another plan.');
     }
-    
     const conversionRecord = {
       ...conversionData,
       Id: this.getNextId(),

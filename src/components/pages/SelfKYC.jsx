@@ -101,9 +101,23 @@ const SelfKYC = React.memo(() => {
         return;
       }
       
-      const errorMessage = err.message || 'Failed to send OTP. Please try again.';
+let errorMessage = 'Failed to send OTP. Please try again.';
+      
+      if (err.code === 'VALIDATION_ERROR') {
+        errorMessage = 'Please check your mobile number format and try again.';
+      } else if (err.code === 'RATE_LIMIT') {
+        errorMessage = err.message; // Already has timing info
+      } else if (err.code === 'NETWORK_ERROR') {
+        errorMessage = 'Connection issue. Please check your internet and try again.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error(errorMessage, { 
+        duration: err.code === 'RATE_LIMIT' ? 8000 : 4000,
+        icon: err.code === 'NETWORK_ERROR' ? '📡' : '⚠️'
+      });
       
       // Reset retry count on non-network errors
       if (err.code !== 'NETWORK_ERROR') {
@@ -133,26 +147,47 @@ const SelfKYC = React.memo(() => {
         duration: 4000
       });
       
-    } catch (err) {
+} catch (err) {
       console.error('OTP verification error:', err);
       
-      let errorMessage = err.message || 'OTP verification failed';
+      let errorMessage = 'OTP verification failed';
+      let toastIcon = '⚠️';
+      let toastDuration = 4000;
       
       // Provide specific guidance based on error type
       if (err.code === 'INVALID_OTP' && err.remainingAttempts) {
-        errorMessage = `${err.message} ${err.remainingAttempts === 1 ? 'This is your last attempt.' : ''}`;
+        errorMessage = `${err.message} ${err.remainingAttempts === 1 ? 'This is your last attempt.' : `${err.remainingAttempts} attempts remaining.`}`;
+        toastIcon = '🔢';
       } else if (err.code === 'OTP_EXPIRED') {
-        errorMessage = 'OTP has expired. Click "Resend OTP" to get a new one.';
+        errorMessage = 'OTP has expired. Click "Resend OTP" below to get a new one.';
         setCanResend(true);
         setResendTimer(0);
+        toastIcon = '⏰';
+        toastDuration = 6000;
       } else if (err.code === 'MAX_ATTEMPTS_EXCEEDED') {
-        errorMessage = 'Too many failed attempts. Please request a new OTP.';
+        errorMessage = 'Too many failed attempts. Please request a new OTP to continue.';
         setOtpSent(false);
         setCurrentStep(0);
         setCanResend(true);
         setResendTimer(0);
+        toastIcon = '🚫';
+        toastDuration = 8000;
+      } else if (err.code === 'OTP_NOT_FOUND') {
+        errorMessage = 'OTP session expired. Please request a new OTP.';
+        setOtpSent(false);
+        setCurrentStep(0);
+        setCanResend(true);
+        setResendTimer(0);
+        toastIcon = '🔍';
+      } else if (err.message) {
+        errorMessage = err.message;
       }
       
+      setError(errorMessage);
+      toast.error(errorMessage, { 
+        duration: toastDuration,
+        icon: toastIcon
+      });
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -250,7 +285,8 @@ const SelfKYC = React.memo(() => {
             placeholder="Enter your primary mobile number"
             error={validationErrors.primaryMobile}
             maxLength={10}
-            className="form-field"
+className="form-field transition-all duration-200"
+            error={validationErrors.primaryMobile}
           />
           
           <Input
@@ -261,8 +297,9 @@ const SelfKYC = React.memo(() => {
             type="tel"
             icon="Phone"
             placeholder="Enter family/relative mobile"
-            error={validationErrors.alternateMobile}
+error={validationErrors.alternateMobile}
             maxLength={10}
+            className="form-field transition-all duration-200"
             className="form-field"
             helpText="This number will receive the OTP for verification"
           />
@@ -274,8 +311,8 @@ const SelfKYC = React.memo(() => {
             required
             icon="User"
             placeholder="Enter contact person's full name"
-            error={validationErrors.contactName}
-            className="form-field"
+error={validationErrors.contactName}
+            className="form-field transition-all duration-200"
           />
           
           <div className="space-y-2 form-field">
@@ -284,9 +321,9 @@ const SelfKYC = React.memo(() => {
             </label>
             <select
               value={formData.relationship}
-              onChange={(e) => updateFormData('relationship', e.target.value)}
-              className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm transition-all duration-200 ${
-                validationErrors.relationship ? 'border-error focus:border-error focus:ring-error' : ''
+onChange={(e) => updateFormData('relationship', e.target.value)}
+              className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm transition-all duration-200 hover:border-gray-400 ${
+                validationErrors.relationship ? 'border-error focus:border-error focus:ring-error bg-red-50' : 'focus:bg-blue-50'
               }`}
               required
             >
@@ -610,17 +647,22 @@ return (
       </div>
 
       {/* Error display */}
-      {error && (
+{error && (
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-red-50 border border-red-200 rounded-lg p-4"
+          initial={{ opacity: 0, y: -10, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+          transition={{ duration: 0.2 }}
+          className="bg-red-50 border border-red-200 rounded-lg p-4 shadow-sm"
         >
           <div className="flex items-start space-x-3">
-            <ApperIcon name="AlertCircle" className="h-5 w-5 text-red-600 mt-0.5" />
-            <div>
-              <h4 className="text-sm font-medium text-red-900">Error</h4>
-              <p className="text-sm text-red-800 mt-1">{error}</p>
+            <ApperIcon name="AlertCircle" className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <h4 className="text-sm font-medium text-red-900">Verification Error</h4>
+              <p className="text-sm text-red-800 mt-1 leading-relaxed">{error}</p>
+              {error.includes('expired') && (
+                <p className="text-xs text-red-700 mt-2 font-medium">💡 Tip: Use the "Resend OTP" button to get a fresh verification code</p>
+              )}
             </div>
           </div>
         </motion.div>

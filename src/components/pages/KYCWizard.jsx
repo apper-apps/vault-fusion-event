@@ -19,13 +19,22 @@ const handleSubmit = async (formData) => {
       
       // Validate form data before submission
       const validation = validateKYCForm(formData);
-if (!validation.isValid) {
+      if (!validation.isValid) {
         const errorMessages = Object.values(validation.errors);
-        toast.error(`Please fix the following errors:\n${errorMessages.slice(0, 3).join('\n')}${errorMessages.length > 3 ? '\n...and more' : ''}`);
+        const errorCount = errorMessages.length;
+        
+        if (errorCount === 1) {
+          toast.error(errorMessages[0], { duration: 6000, icon: '⚠️' });
+        } else {
+          toast.error(`Please complete ${errorCount} required fields:\n• ${errorMessages.slice(0, 2).join('\n• ')}${errorCount > 2 ? `\n• ...and ${errorCount - 2} more` : ''}`, {
+            duration: 8000,
+            icon: '📋'
+          });
+        }
         return;
       }
       
-      // Prepare submission data with proper document structure
+// Prepare submission data with proper document structure
       const submissionData = {
         userId: 'user123', // Mock user ID
         status: 'pending',
@@ -50,14 +59,23 @@ if (!validation.isValid) {
 
       await kycService.create(submissionData);
       
-toast.success('KYC submission successful! You will receive updates via email.', {
-        duration: 4000,
+      toast.success('🎉 KYC submission successful! You will receive status updates via email and SMS.', {
+        duration: 6000,
         position: 'top-center',
       });
+      
+      // Show immediate next steps
+      setTimeout(() => {
+        toast.info('💡 Your application is now under review. Typical processing time is 2-3 business days.', {
+          duration: 8000,
+          position: 'top-center',
+        });
+      }, 1000);
+      
       // Redirect to dashboard after successful submission
       setTimeout(() => {
         navigate('/dashboard');
-      }, 2000);
+      }, 2500);
       
     } catch (error) {
       console.error('Error submitting KYC:', error);

@@ -53,11 +53,16 @@ class CAFService {
     };
   }
 
-  async generateCAF(cafData) {
-    await delay(600);
+async generateCAF(cafData) {
+    await delay(400); // Faster CAF generation
     
-    // Validate CAF data
-    this.validateCAFData(cafData);
+    // Enhanced validation with detailed error messages
+    try {
+      this.validateCAFData(cafData);
+    } catch (error) {
+      // Re-throw with more user-friendly message
+      throw new Error(`CAF generation failed: ${error.message}`);
+    }
     
     const cafRecord = {
       ...cafData,
@@ -67,43 +72,77 @@ class CAFService {
       createdAt: new Date().toISOString(),
       template: this.getCAFTemplate(cafData.formData.customerType),
       documentUrl: this.generateMockDocumentUrl(cafData.cafId),
-      qrCode: this.generateQRCode(cafData.cafId)
+      qrCode: this.generateQRCode(cafData.cafId),
+      processingTime: Date.now() - (cafData.startTime || Date.now()),
+      validityPeriod: '30 days from generation'
     };
     
     this.cafRecords.push(cafRecord);
     return cloneData(cafRecord);
   }
-
-  validateCAFData(cafData) {
+validateCAFData(cafData) {
+    const errors = [];
+    
     if (!cafData.userId) {
-      throw new Error('User ID is required for CAF generation');
+      errors.push('User session is required. Please log in and try again.');
     }
     
     if (!cafData.formData) {
-      throw new Error('Form data is required for CAF generation');
+      errors.push('Form data is missing. Please complete the CAF form.');
     }
     
     if (!cafData.cafId) {
-      throw new Error('CAF ID is required');
+      errors.push('CAF reference ID is missing. Please restart the form.');
+    }
+    
+    if (!cafData.formData) {
+      throw new Error(errors.join(' '));
     }
     
     const customerType = cafData.formData.customerType;
-    if (!customerType || !this.templates[customerType]) {
-      throw new Error('Invalid customer type');
+    if (!customerType) {
+      errors.push('Please select customer type (Individual or Business)');
+    } else if (!this.templates[customerType]) {
+      errors.push('Invalid customer type selected. Please choose Individual or Business.');
     }
     
-    // Validate required fields based on customer type
+    if (errors.length > 0) {
+      throw new Error(errors.join(' '));
+    }
+    
+    // Validate required fields with user-friendly field names
     const template = this.templates[customerType];
     const missingFields = [];
+    const fieldLabels = {
+      'personalDetails.fullName': 'Full Name',
+      'personalDetails.mobile': 'Mobile Number',
+      'personalDetails.email': 'Email Address',
+      'personalDetails.aadhaarNumber': 'Aadhaar Number',
+      'personalDetails.panNumber': 'PAN Number',
+      'addressDetails.residentialAddress': 'Residential Address',
+      'addressDetails.city': 'City',
+      'addressDetails.state': 'State',
+      'addressDetails.pincode': 'PIN Code',
+      'businessDetails.companyName': 'Company Name',
+      'businessDetails.gstin': 'GSTIN',
+      'serviceDetails.connectionType': 'Connection Type',
+      'serviceDetails.planSelected': 'Plan Selection'
+    };
     
     template.requiredFields.forEach(field => {
       if (!this.hasNestedValue(cafData.formData, field)) {
-        missingFields.push(field);
+        const friendlyName = fieldLabels[field] || field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+        missingFields.push(friendlyName);
       }
     });
     
     if (missingFields.length > 0) {
-      throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+      const fieldCount = missingFields.length;
+      if (fieldCount === 1) {
+        throw new Error(`Please fill in the ${missingFields[0]} field to continue.`);
+      } else {
+        throw new Error(`Please complete ${fieldCount} required fields: ${missingFields.slice(0, 3).join(', ')}${fieldCount > 3 ? ` and ${fieldCount - 3} more` : ''}.`);
+      }
     }
   }
 
@@ -141,11 +180,11 @@ class CAFService {
   }
 
   async downloadCAF(cafId) {
-    await delay(400);
+await delay(200); // Faster download initiation
     
     const cafRecord = this.cafRecords.find(record => record.cafId === cafId);
     if (!cafRecord) {
-      throw new Error(`CAF with ID ${cafId} not found`);
+      throw new Error(`CAF document not found. Please regenerate the CAF or contact support if this error persists.`);
     }
     
     // In real implementation, this would generate and return the PDF
@@ -161,13 +200,13 @@ class CAFService {
   async submitCAF(cafData) {
     await delay(500);
     
-    if (!cafData.Id) {
-      throw new Error('CAF ID is required for submission');
+if (!cafData.Id) {
+      throw new Error('CAF submission requires a valid document ID. Please regenerate the CAF.');
     }
     
     const index = this.cafRecords.findIndex(record => record.Id === cafData.Id);
     if (index === -1) {
-      throw new Error(`CAF record with ID ${cafData.Id} not found`);
+      throw new Error(`CAF document not found in system. Please regenerate and try again.`);
     }
     
     this.cafRecords[index] = {
@@ -176,7 +215,9 @@ class CAFService {
       status: 'submitted',
       submittedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      applicationNumber: `APP${Date.now()}`
+      applicationNumber: `APP${Date.now()}`,
+      estimatedProcessingTime: '3-5 business days',
+      nextSteps: 'Application submitted successfully. You will receive updates via email and SMS.'
     };
     
     return cloneData(this.cafRecords[index]);

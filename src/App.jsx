@@ -71,11 +71,14 @@ function App() {
     return <SuspenseFallback />;
   }
 return (
-    <ErrorBoundary
+<ErrorBoundary
       FallbackComponent={ErrorFallback}
       onError={(error, errorInfo) => {
         console.error('Application error:', error, errorInfo);
-        toast.error('An unexpected error occurred');
+        toast.error('Something went wrong. Please refresh the page or try again later.', {
+          duration: 6000,
+          icon: '⚠️'
+        });
       }}
       onReset={() => {
         // Reset app state if needed
@@ -182,20 +185,22 @@ return (
           </Suspense>
 <ToastContainer
             position="top-right"
-            autoClose={4000}
+            autoClose={3000}
             hideProgressBar={false}
             newestOnTop={true}
             closeOnClick
             rtl={false}
-            pauseOnFocusLoss
+            pauseOnFocusLoss={false}
             draggable
             pauseOnHover
             theme="light"
             style={{ zIndex: 9999 }}
-            toastClassName="!rounded-lg !shadow-elevation-2"
-            bodyClassName="!text-sm !font-medium"
+            toastClassName="!rounded-lg !shadow-elevation-2 !border-0"
+            bodyClassName="!text-sm !font-medium !leading-relaxed"
             progressClassName="!bg-white/30"
-            limit={5}
+            transition="slide"
+            stacked
+            limit={3}
           />
         </div>
       </BrowserRouter>

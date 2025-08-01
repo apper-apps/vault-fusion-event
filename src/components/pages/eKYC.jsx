@@ -44,10 +44,13 @@ const EKYC = () => {
     setCurrentStep(1);
   };
 
-  const handleAadhaarSubmit = async () => {
+const handleAadhaarSubmit = async () => {
     try {
       if (!validateAadhaar(formData.aadhaarNumber)) {
-        toast.error('Please enter a valid 12-digit Aadhaar number');
+        toast.error('Please enter a valid 12-digit Aadhaar number without spaces or dashes', {
+          duration: 5000,
+          icon: '🆔'
+        });
         return;
       }
 
@@ -70,7 +73,10 @@ const EKYC = () => {
   const handleOTPVerification = async () => {
     try {
       if (!validateOTP(formData.otp)) {
-        toast.error('Please enter a valid 6-digit OTP');
+toast.error('Please enter the complete 6-digit OTP code', {
+          duration: 4000,
+          icon: '🔢'
+        });
         return;
       }
 
@@ -82,11 +88,36 @@ const EKYC = () => {
       setKycData(result.kycData);
       setAadhaarVerified(true);
       setCurrentStep(3);
-      toast.success('e-KYC completed successfully!');
+      toast.success('e-KYC verification completed successfully! Your details have been retrieved.', {
+        duration: 5000,
+        icon: '✅'
+      });
       
     } catch (err) {
-      setError(err.message || 'OTP verification failed');
-      toast.error(err.message || 'OTP verification failed');
+      let errorMessage = 'OTP verification failed';
+      let toastIcon = '⚠️';
+      let toastDuration = 5000;
+      
+      if (err.message?.includes('expired')) {
+        errorMessage = 'OTP has expired. Please request a new verification code.';
+        toastIcon = '⏰';
+        toastDuration = 6000;
+      } else if (err.message?.includes('invalid') || err.message?.includes('incorrect')) {
+        errorMessage = 'Invalid OTP. Please check the 6-digit code and try again.';
+        toastIcon = '🔢';
+      } else if (err.message?.includes('attempts')) {
+        errorMessage = 'Too many incorrect attempts. Please request a new OTP.';
+        toastIcon = '🚫';
+        toastDuration = 8000;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
+      toast.error(errorMessage, {
+        duration: toastDuration,
+        icon: toastIcon
+      });
     } finally {
       setLoading(false);
     }
@@ -192,7 +223,7 @@ const EKYC = () => {
             icon="CreditCard"
             placeholder="0000 0000 0000"
             className="text-center text-lg tracking-wider"
-          />
+/>
           <p className="text-xs text-gray-500 mt-2 text-center">
             Your Aadhaar number is secure and will be used only for verification
           </p>
@@ -233,8 +264,8 @@ const EKYC = () => {
             type="tel"
             maxLength={6}
             icon="Key"
-            placeholder="000000"
-            className="text-center text-2xl tracking-wider"
+placeholder="Enter 6-digit OTP"
+            className="text-center text-2xl tracking-wider font-mono"
           />
           <p className="text-xs text-gray-500 mt-2 text-center">
             OTP is valid for 10 minutes
@@ -367,12 +398,19 @@ const EKYC = () => {
     }
   };
 
-  if (loading && currentStep === 0) {
+if (loading && currentStep === 0) {
     return <Loading type="cards" />;
   }
 
   if (error && currentStep === 0) {
-    return <Error message={error} onRetry={() => setError('')} />;
+    return <Error 
+      title="e-KYC Process Error" 
+      message={error} 
+      onRetry={() => {
+        setError('');
+        setLoading(false);
+      }} 
+    />;
   }
 
   return (
