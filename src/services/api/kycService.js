@@ -800,18 +800,6 @@ async verifyEKYCOTP(aadhaarNumber, enteredOTP) {
   }
 
   // Document verification operations  
-  async verifyDocumentWithDigiLocker(documentType) {
-    await delay(600);
-    
-    const mockVerification = {
-      type: documentType,
-      verified: true,
-      issuer: 'Government Authority',
-      verifiedAt: new Date().toISOString()
-    };
-    
-    return mockVerification;
-  }
 
   // CAF operations
   async generateCAF(formData) {
