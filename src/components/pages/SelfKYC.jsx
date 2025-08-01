@@ -435,27 +435,33 @@ const renderOTPVerification = useMemo(() => (
         </div>
       </div>
     </Card>
-  ), [formData.alternateMobile, formData.otp, debugOTP, canResend, resendTimer, loading, handleSendOTP]);
+), [formData.alternateMobile, formData.otp, debugOTP, canResend, resendTimer, loading, handleSendOTP]);
 
-  const renderComplete = () => (
+  // Completion step component
+  const renderComplete = useMemo(() => (
     <Card>
       <div className="space-y-6">
         <div className="text-center mb-8">
-          <ApperIcon name="CheckCircle" className="h-12 w-12 text-green-600 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Self-KYC Ready</h2>
-          <p className="text-gray-600">Review your details and submit your Self-KYC application</p>
+          <ApperIcon name="CheckCircle" className="h-16 w-16 text-success mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Self-KYC Completed!</h2>
+          <p className="text-gray-600">
+            Your Self-KYC submission has been successfully registered
+          </p>
         </div>
 
-        <div className="bg-gray-50 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Verification Summary</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div><span className="text-gray-600">Primary Mobile:</span> {formData.primaryMobile}</div>
-            <div><span className="text-gray-600">Alternate Mobile:</span> {formData.alternateMobile}</div>
-            <div><span className="text-gray-600">Contact Name:</span> {formData.contactName}</div>
-            <div><span className="text-gray-600">Relationship:</span> {formData.relationship}</div>
-          </div>
-          <div className="mt-4 flex items-center space-x-2">
-            <Badge variant="success" size="sm" icon="Check">OTP Verified</Badge>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+          <div className="flex items-start space-x-3">
+            <ApperIcon name="CheckCircle" className="h-6 w-6 text-green-600 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="text-lg font-semibold text-green-900 mb-2">Registration Successful</h4>
+              <div className="space-y-2 text-sm text-green-800">
+                <p><strong>Primary Mobile:</strong> {formData.primaryMobile}</p>
+                <p><strong>Alternate Mobile:</strong> {formData.alternateMobile}</p>
+                <p><strong>Contact Person:</strong> {formData.contactName}</p>
+                <p><strong>Relationship:</strong> {formData.relationship}</p>
+                <p><strong>Submitted At:</strong> {new Date().toLocaleString()}</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -464,28 +470,29 @@ const renderOTPVerification = useMemo(() => (
             <ApperIcon name="Info" className="h-5 w-5 text-blue-600 mt-0.5" />
             <div>
               <h4 className="text-sm font-medium text-blue-900">Next Steps</h4>
-              <ul className="mt-1 text-sm text-blue-800 space-y-1">
-                <li>• Your Self-KYC will be submitted for review</li>
-                <li>• Verification typically takes 1-2 business days</li>
-                <li>• You'll receive updates via email and SMS</li>
+              <ul className="mt-2 text-sm text-blue-800 space-y-1">
+                <li>• Your application will be reviewed within 24-48 hours</li>
+                <li>• You will receive SMS updates on your primary mobile number</li>
+                <li>• Check your dashboard for real-time status updates</li>
               </ul>
             </div>
           </div>
         </div>
       </div>
     </Card>
-  );
+  ), [formData.primaryMobile, formData.alternateMobile, formData.contactName, formData.relationship]);
 
+  // Step content renderer
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
-        return renderMobileSetup();
+        return renderMobileSetup;
       case 1:
-        return renderOTPVerification();
+        return renderOTPVerification;
       case 2:
-        return renderComplete();
+        return renderComplete;
       default:
-        return renderMobileSetup();
+        return renderMobileSetup;
     }
   };
 
