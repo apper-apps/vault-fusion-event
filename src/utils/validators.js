@@ -25,6 +25,26 @@ export const validateMobile = (mobile) => {
   return mobileRegex.test(mobile.replace(/\s/g, ''));
 };
 
+// Enhanced mobile number formatting
+export const formatMobileNumber = (mobile) => {
+  // Remove all non-digits
+  const digits = mobile.replace(/\D/g, '');
+  
+  // Limit to 10 digits
+  const limited = digits.slice(0, 10);
+  
+  return limited;
+};
+
+// Format mobile for display (with masking)
+export const formatMobileForDisplay = (mobile, maskDigits = 4) => {
+  const cleaned = mobile.replace(/\D/g, '');
+  if (cleaned.length !== 10) return mobile;
+  
+  const masked = cleaned.slice(0, -maskDigits) + '*'.repeat(maskDigits);
+  return masked.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+};
+
 export const validateCIN = (cin) => {
   if (!cin) return true; // CIN is optional
   const cinRegex = /^[LU]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6}$/;
@@ -158,18 +178,32 @@ export const validateKYCForm = (formData) => {
 };
 
 // Self-KYC specific validators
+// Enhanced OTP validation with detailed feedback
 export const validateOTP = (otp) => {
+  if (!otp) return false;
   const otpRegex = /^\d{6}$/;
-  return otpRegex.test(otp);
+  return otpRegex.test(otp.replace(/\s/g, ''));
 };
 
+// Enhanced alternate mobile validation
 export const validateAlternateMobile = (mobile, primaryMobile) => {
-  if (!validateMobile(mobile)) {
-    return { isValid: false, message: 'Invalid mobile number format' };
+  if (!mobile || mobile.trim() === '') {
+    return { isValid: false, message: 'Alternate mobile number is required' };
   }
   
-  if (mobile === primaryMobile) {
-    return { isValid: false, message: 'Alternate mobile cannot be same as primary mobile' };
+  const cleanMobile = mobile.replace(/\D/g, '');
+  const cleanPrimary = primaryMobile ? primaryMobile.replace(/\D/g, '') : '';
+  
+  if (cleanMobile.length !== 10) {
+    return { isValid: false, message: 'Mobile number must be exactly 10 digits' };
+  }
+  
+  if (!validateMobile(mobile)) {
+    return { isValid: false, message: 'Please enter a valid Indian mobile number starting with 6, 7, 8, or 9' };
+  }
+  
+  if (cleanMobile === cleanPrimary) {
+    return { isValid: false, message: 'Alternate mobile cannot be same as primary mobile number' };
   }
   
   return { isValid: true };
@@ -184,17 +218,25 @@ export const validateRelationship = (relationship) => {
   return validRelationships.includes(relationship.toLowerCase());
 };
 
+// Enhanced Self-KYC form validation with comprehensive feedback
 export const validateSelfKYCForm = (formData) => {
   const errors = {};
   
+  // Primary mobile validation
   if (!validateRequired(formData.primaryMobile)) {
     errors.primaryMobile = 'Primary mobile number is required';
-  } else if (!validateMobile(formData.primaryMobile)) {
-    errors.primaryMobile = 'Invalid primary mobile number format';
+  } else {
+    const cleanPrimary = formData.primaryMobile.replace(/\D/g, '');
+    if (cleanPrimary.length !== 10) {
+      errors.primaryMobile = 'Primary mobile must be exactly 10 digits';
+    } else if (!validateMobile(formData.primaryMobile)) {
+      errors.primaryMobile = 'Please enter a valid Indian mobile number starting with 6, 7, 8, or 9';
+    }
   }
   
+  // Alternate mobile validation
   if (!validateRequired(formData.alternateMobile)) {
-    errors.alternateMobile = 'Alternate mobile number is required';
+    errors.alternateMobile = 'Alternate mobile number is required for verification';
   } else {
     const altMobileValidation = validateAlternateMobile(formData.alternateMobile, formData.primaryMobile);
     if (!altMobileValidation.isValid) {
@@ -202,20 +244,41 @@ export const validateSelfKYCForm = (formData) => {
     }
   }
   
+  // Contact name validation
   if (!validateRequired(formData.contactName)) {
     errors.contactName = 'Contact person name is required';
+  } else if (formData.contactName.trim().length < 2) {
+    errors.contactName = 'Contact name must be at least 2 characters long';
+  } else if (!/^[a-zA-Z\s.]+$/.test(formData.contactName.trim())) {
+    errors.contactName = 'Contact name can only contain letters, spaces, and dots';
   }
   
+  // Relationship validation
   if (!validateRequired(formData.relationship)) {
-    errors.relationship = 'Relationship is required';
+    errors.relationship = 'Please select your relationship with the contact person';
   } else if (!validateRelationship(formData.relationship)) {
-    errors.relationship = 'Please select a valid relationship';
+    errors.relationship = 'Please select a valid relationship from the dropdown';
   }
   
   return {
     isValid: Object.keys(errors).length === 0,
-    errors
+    errors,
+    completeness: Object.values(formData).filter(v => v && v.trim()).length / 4 * 100
+  };
 };
+
+// Debounced validation for real-time feedback
+export const createDebouncedValidator = (validator, delay = 300) => {
+  let timeoutId;
+  
+  return (...args) => {
+    return new Promise((resolve) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        resolve(validator(...args));
+      }, delay);
+    });
+  };
 };
 
 // UIDAI and DigiLocker specific validators
