@@ -1,20 +1,20 @@
-import React, { useState, useEffect, Suspense } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { ErrorBoundary } from "react-error-boundary";
-import SelfKYC from "@/components/pages/SelfKYC";
-import eKYC from "@/components/pages/eKYC";
-import OTPConversion from "@/components/pages/OTPConversion";
-import CAFForm from "@/components/pages/CAFForm";
+import "@/index.css";
 import Layout from "@/components/organisms/Layout";
-import AdminDashboard from "@/components/pages/AdminDashboard";
-import KYCWizard from "@/components/pages/KYCWizard";
-import CustomerDashboard from "@/components/pages/CustomerDashboard";
-import Reports from "@/components/pages/Reports";
-import Settings from "@/components/pages/Settings";
-import ReviewDetails from "@/components/pages/ReviewDetails";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
+import Settings from "@/components/pages/Settings";
+import OTPConversion from "@/components/pages/OTPConversion";
+import Reports from "@/components/pages/Reports";
+import SelfKYC from "@/components/pages/SelfKYC";
+import KYCWizard from "@/components/pages/KYCWizard";
+import CAFForm from "@/components/pages/CAFForm";
+import eKYC from "@/components/pages/eKYC";
+import ReviewDetails from "@/components/pages/ReviewDetails";
+import AdminDashboard from "@/components/pages/AdminDashboard";
 
 // Error boundary fallback component
 const ErrorFallback = ({ error, resetErrorBoundary }) => (
@@ -91,16 +91,8 @@ return (
             <Routes>
               <Route path="/" element={<Layout userRole={userRole} />}>
                 {userRole === 'customer' ? (
-                  <>
-                    <Route index element={<Navigate to="/dashboard" replace />} />
-                    <Route 
-                      path="dashboard" 
-                      element={
-                        <Suspense fallback={<Loading />}>
-                          <CustomerDashboard />
-                        </Suspense>
-                      } 
-                    />
+<>
+                    <Route index element={<Navigate to="/kyc-submit" replace />} />
                     <Route 
                       path="kyc-submit" 
                       element={
@@ -177,9 +169,9 @@ return (
                         </Suspense>
                       } 
                     />
-                  </>
+</>
                 )}
-                <Route path="*" element={<Navigate to={userRole === 'customer' ? '/dashboard' : '/admin'} replace />} />
+                <Route path="*" element={<Navigate to={userRole === 'customer' ? '/kyc-submit' : '/admin/reports'} replace />} />
               </Route>
             </Routes>
           </Suspense>
