@@ -1,9 +1,10 @@
-import React, { forwardRef } from 'react';
-import ApperIcon from '@/components/ApperIcon';
+import React, { forwardRef } from "react";
+import ApperIcon from "@/components/ApperIcon";
 
 const Input = forwardRef(({ 
   label,
   error,
+  helpText,
   icon,
   iconPosition = 'left',
   className = '',
@@ -44,9 +45,13 @@ const Input = forwardRef(({
             ${iconClasses}
             ${className}
           `}
-          {...props}
+{...props}
         />
       </div>
+      
+      {helpText && !error && (
+        <p className="mt-1 text-sm text-gray-500">{helpText}</p>
+      )}
       
       {error && (
         <p className="mt-1 text-sm text-error flex items-center gap-1">
