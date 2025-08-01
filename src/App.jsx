@@ -14,9 +14,8 @@ import KYCWizard from "@/components/pages/KYCWizard";
 import CAFForm from "@/components/pages/CAFForm";
 import eKYC from "@/components/pages/eKYC";
 import ReviewDetails from "@/components/pages/ReviewDetails";
-import AdminDashboard from "@/components/pages/AdminDashboard";
 
-// Error boundary fallback component
+// Initialize app configuration
 const ErrorFallback = ({ error, resetErrorBoundary }) => (
   <div className="min-h-screen flex items-center justify-center bg-surface p-4">
     <Error 
@@ -133,19 +132,12 @@ return (
                         </Suspense>
                       } 
                     />
-                  </>
+</>
                 ) : (
                   <>
-                    <Route index element={<Navigate to="/admin" replace />} />
-                    <Route 
-                      path="admin" 
-                      element={
-                        <Suspense fallback={<Loading />}>
-                          <AdminDashboard />
-                        </Suspense>
-                      } 
-                    />
-                    <Route 
+                    {/* Admin Routes */}
+                    <Route index element={<Navigate to="/admin/reports" replace />} />
+                    <Route
                       path="admin/review/:id" 
                       element={
                         <Suspense fallback={<Loading />}>
@@ -168,8 +160,8 @@ return (
                           <Settings />
                         </Suspense>
                       } 
-                    />
-</>
+/>
+                  </>
                 )}
                 <Route path="*" element={<Navigate to={userRole === 'customer' ? '/kyc-submit' : '/admin/reports'} replace />} />
               </Route>
