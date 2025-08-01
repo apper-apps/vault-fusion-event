@@ -86,15 +86,6 @@ const ReviewDetails = () => {
     }
   };
 
-  const downloadDocument = (document) => {
-    toast.info(`Downloading ${document.name}`);
-    // In real app, this would trigger actual file download
-  };
-
-  const downloadAllDocuments = () => {
-    toast.info('Downloading all documents as ZIP file');
-    // In real app, this would create and download a ZIP file
-  };
 
   if (loading) return <Loading type="form" />;
   if (error) return <Error message={error} onRetry={loadSubmission} />;
@@ -118,16 +109,13 @@ const ReviewDetails = () => {
           </div>
         </div>
         
-        <div className="flex items-center space-x-3">
+<div className="flex items-center space-x-3">
           <Badge 
             variant={submission.status === 'approved' ? 'approved' : submission.status === 'rejected' ? 'rejected' : 'pending'}
             size="lg"
           >
             {submission.status.toUpperCase()}
           </Badge>
-          <Button variant="secondary" icon="Download" onClick={downloadAllDocuments}>
-            Download All
-          </Button>
         </div>
       </div>
 
@@ -193,27 +181,7 @@ const ReviewDetails = () => {
           </div>
         </div>
 
-{/* Personal Documents */}
-        {submission.personalDetails?.panDocument?.length > 0 && (
-          <div className="mt-6">
-            <h4 className="text-md font-medium text-gray-800 mb-3">Personal Documents</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {submission.personalDetails.panDocument.map((doc) => (
-                <div key={doc.Id || Math.random()} className="document-preview border rounded-lg p-4">
-                  <div className="flex items-center space-x-3">
-                    <ApperIcon name="FileText" className="h-8 w-8 text-gray-600" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{doc.name || 'Untitled Document'}</p>
-                      <p className="text-xs text-gray-500">PAN Card</p>
-                    </div>
-                    <Button variant="ghost" size="sm" icon="Download" onClick={() => downloadDocument(doc)} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </Card>
+</Card>
 
       {/* Business Details */}
       <Card>
@@ -246,35 +214,7 @@ const ReviewDetails = () => {
           <p className="text-gray-900">{submission.businessDetails?.address || 'N/A'}</p>
         </div>
 
-{/* Business Documents */}
-        {((submission.businessDetails?.gstDocument?.length > 0) || 
-          (submission.businessDetails?.companyPanDocument?.length > 0) || 
-          (submission.businessDetails?.addressProof?.length > 0)) && (
-          <div className="mt-6">
-            <h4 className="text-md font-medium text-gray-800 mb-3">Business Documents</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[
-                { docs: submission.businessDetails?.gstDocument || [], label: 'GST Certificate' },
-                { docs: submission.businessDetails?.companyPanDocument || [], label: 'Company PAN' },
-                { docs: submission.businessDetails?.addressProof || [], label: 'Address Proof' }
-              ].map((docGroup, groupIndex) => (
-                docGroup.docs.map((doc, docIndex) => (
-                  <div key={doc.Id || `${groupIndex}-${docIndex}`} className="document-preview border rounded-lg p-4">
-                    <div className="flex items-center space-x-3">
-                      <ApperIcon name="FileText" className="h-8 w-8 text-gray-600" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{doc.name || 'Untitled Document'}</p>
-                        <p className="text-xs text-gray-500">{docGroup.label}</p>
-                      </div>
-                      <Button variant="ghost" size="sm" icon="Download" onClick={() => downloadDocument(doc)} />
-                    </div>
-                  </div>
-                ))
-              ))}
-            </div>
-          </div>
-        )}
-      </Card>
+</Card>
 
       {/* Telecom Usage */}
       <Card>
@@ -298,27 +238,7 @@ const ReviewDetails = () => {
           </div>
         </div>
 
-{/* Compliance Documents */}
-        {submission.telecomUsage?.complianceForm?.length > 0 && (
-          <div className="mt-6">
-            <h4 className="text-md font-medium text-gray-800 mb-3">Compliance Documents</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {submission.telecomUsage.complianceForm.map((doc, index) => (
-                <div key={doc.Id || `compliance-${index}`} className="document-preview border rounded-lg p-4">
-                  <div className="flex items-center space-x-3">
-                    <ApperIcon name="FileText" className="h-8 w-8 text-gray-600" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{doc.name || 'Untitled Document'}</p>
-                      <p className="text-xs text-gray-500">Compliance Form</p>
-                    </div>
-                    <Button variant="ghost" size="sm" icon="Download" onClick={() => downloadDocument(doc)} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </Card>
+</Card>
 {/* Authorized Signatory */}
       <Card>
         <div className="flex items-center space-x-3 mb-6">
@@ -345,47 +265,6 @@ const ReviewDetails = () => {
           </div>
         </div>
 
-        {/* Authorization Documents */}
-        {submission.authorizedSignatory?.authorizationLetter?.length > 0 && (
-          <div className="mt-6">
-            <h4 className="text-md font-medium text-gray-800 mb-3">Authorization Documents</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {submission.authorizedSignatory.authorizationLetter.map((doc, index) => (
-                <div key={doc.Id || `auth-${index}`} className="document-preview border rounded-lg p-4">
-                  <div className="flex items-center space-x-3">
-                    <ApperIcon name="FileText" className="h-8 w-8 text-gray-600" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{doc.name || 'Untitled Document'}</p>
-                      <p className="text-xs text-gray-500">Authorization Letter</p>
-                    </div>
-                    <Button variant="ghost" size="sm" icon="Download" onClick={() => downloadDocument(doc)} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Selfie Verification */}
-        {submission.selfieVerification?.selfie?.length > 0 && (
-          <div className="mt-6">
-            <h4 className="text-md font-medium text-gray-800 mb-3">Selfie Verification</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {submission.selfieVerification.selfie.map((doc, index) => (
-                <div key={doc.Id || `selfie-${index}`} className="document-preview border rounded-lg p-4">
-                  <div className="flex items-center space-x-3">
-                    <ApperIcon name="Camera" className="h-8 w-8 text-gray-600" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{doc.name || 'Untitled Document'}</p>
-                      <p className="text-xs text-gray-500">Verification Selfie</p>
-                    </div>
-                    <Button variant="ghost" size="sm" icon="Download" onClick={() => downloadDocument(doc)} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 </Card>
 
       {/* Customer Declaration */}
