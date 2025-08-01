@@ -1,46 +1,78 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { motion } from 'framer-motion';
-import Card from '@/components/atoms/Card';
-import Button from '@/components/atoms/Button';
-import Badge from '@/components/atoms/Badge';
-import Input from '@/components/atoms/Input';
-import Loading from '@/components/ui/Loading';
-import Error from '@/components/ui/Error';
-import ApperIcon from '@/components/ApperIcon';
-import { kycService } from '@/services/api/kycService';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import { motion } from "framer-motion";
+import { kycService } from "@/services/api/kycService";
+import ApperIcon from "@/components/ApperIcon";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
+import Badge from "@/components/atoms/Badge";
+import Input from "@/components/atoms/Input";
+import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
 
 const ReviewDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  
+  // State management
   const [submission, setSubmission] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reviewComment, setReviewComment] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
-const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [showRejectionModal, setShowRejectionModal] = useState(false);
   const [showDocumentViewer, setShowDocumentViewer] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [documentAnalysis, setDocumentAnalysis] = useState({});
   const [verificationChecklist, setVerificationChecklist] = useState({});
   const [currentDocumentIndex, setCurrentDocumentIndex] = useState(0);
+
+  // Load submission data
   const loadSubmission = async () => {
     try {
       setLoading(true);
-      setError('');
+      setError(null);
       
       const data = await kycService.getById(parseInt(id));
+      
+      if (!data) {
+        throw new Error('Submission not found');
+      }
+      
+      // Store submission data in state
       setSubmission(data);
-    } catch (err) {
-      setError('Failed to load submission details. Please try again.');
-      console.error('Error loading submission:', err);
+      
+      // Load document analysis
+      if (data.documents && data.documents.length > 0) {
+        const analysisPromises = data.documents.map(doc => 
+          kycService.analyzeDocument(doc.Id).catch(err => {
+            console.warn(`Failed to analyze document ${doc.Id}:`, err);
+            return null;
+          })
+        );
+        
+        const analysisResults = await Promise.all(analysisPromises);
+        const analysisMap = {};
+        
+        data.documents.forEach((doc, index) => {
+          if (analysisResults[index]) {
+            analysisMap[doc.Id] = analysisResults[index];
+          }
+        });
+        
+        setDocumentAnalysis(analysisMap);
+      }
+    } catch (error) {
+      console.error('Error loading submission:', error);
+      setError(error.message || 'Failed to load submission');
     } finally {
       setLoading(false);
     }
   };
 
+  // Load data on component mount
   useEffect(() => {
     if (id) {
       loadSubmission();
@@ -112,14 +144,14 @@ const [showApprovalModal, setShowApprovalModal] = useState(false);
     setSelectedDocument(null);
   };
 
-  const navigateDocument = (direction) => {
-    if (!data?.documents) return;
+const navigateDocument = (direction) => {
+    if (!submission?.documents) return;
     
     const newIndex = direction === 'next' 
-      ? (currentDocumentIndex + 1) % data.documents.length
-      : (currentDocumentIndex - 1 + data.documents.length) % data.documents.length;
+      ? (currentDocumentIndex + 1) % submission.documents.length
+      : (currentDocumentIndex - 1 + submission.documents.length) % submission.documents.length;
     
-    const newDocument = data.documents[newIndex];
+    const newDocument = submission.documents[newIndex];
     setSelectedDocument(newDocument);
     setCurrentDocumentIndex(newIndex);
   };
@@ -270,13 +302,13 @@ const [showApprovalModal, setShowApprovalModal] = useState(false);
             <h3 className="text-lg font-semibold text-gray-900">Document Verification</h3>
           </div>
           <Badge variant="info" size="sm">
-            {data.documents?.length || 0} Documents
+{submission?.documents?.length || 0} Documents
           </Badge>
         </div>
 
-        {data.documents && data.documents.length > 0 ? (
+        {submission?.documents && submission.documents.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data.documents.map((document, index) => {
+            {submission.documents.map((document, index) => {
               const analysis = documentAnalysis[document.Id];
               const checklist = verificationChecklist[document.Id] || {};
               
@@ -860,7 +892,7 @@ const [showApprovalModal, setShowApprovalModal] = useState(false);
                 variant="ghost"
                 size="lg"
                 onClick={() => navigateDocument('prev')}
-                disabled={!data?.documents || data.documents.length <= 1}
+disabled={!submission?.documents || submission.documents.length <= 1}
                 className="bg-white bg-opacity-80 hover:bg-opacity-100"
                 icon="ChevronLeft"
               />
@@ -871,7 +903,7 @@ const [showApprovalModal, setShowApprovalModal] = useState(false);
                 variant="ghost"
                 size="lg"
                 onClick={() => navigateDocument('next')}
-                disabled={!data?.documents || data.documents.length <= 1}
+disabled={!submission?.documents || submission.documents.length <= 1}
                 className="bg-white bg-opacity-80 hover:bg-opacity-100"
                 icon="ChevronRight"
               />
@@ -889,10 +921,10 @@ const [showApprovalModal, setShowApprovalModal] = useState(false);
             </div>
 
             {/* Document Counter */}
-            {data?.documents && data.documents.length > 1 && (
+{submission?.documents && submission.documents.length > 1 && (
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
                 <div className="bg-white bg-opacity-80 rounded-full px-3 py-1 text-sm font-medium text-gray-700">
-                  {currentDocumentIndex + 1} of {data.documents.length}
+                  {currentDocumentIndex + 1} of {submission.documents.length}
                 </div>
               </div>
             )}

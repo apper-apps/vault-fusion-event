@@ -794,10 +794,6 @@ async verifyEKYCOTP(aadhaarNumber, enteredOTP) {
       attempts: 0
     };
     
-    return {
-      success: true,
-      message: `OTP sent to ${mobileNumber}`,
-      debugOTP: otp
 return {
       success: true,
       message: `OTP sent to ${mobileNumber}`,
