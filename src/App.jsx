@@ -1,8 +1,8 @@
+import "@/index.css";
 import React, { Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { ErrorBoundary } from "react-error-boundary";
-import "@/index.css";
 import Layout from "@/components/organisms/Layout";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
@@ -14,7 +14,7 @@ import KYCWizard from "@/components/pages/KYCWizard";
 import CAFForm from "@/components/pages/CAFForm";
 import eKYC from "@/components/pages/eKYC";
 import ReviewDetails from "@/components/pages/ReviewDetails";
-import AdminDashboard from "@/components/pages/AdminDashboard.jsx";
+import AdminDashboard from "@/components/pages/AdminDashboard";
 
 // Error boundary fallback component
 const ErrorFallback = ({ error, resetErrorBoundary }) => (
