@@ -1,4 +1,6 @@
 import mockData from "@/services/mockData/kycSubmissions.json";
+import React from "react";
+import Error from "@/components/ui/Error";
 
 // Enhanced API delay with realistic network simulation
 const delay = (ms) => new Promise(resolve => {
@@ -796,10 +798,226 @@ async verifyEKYCOTP(aadhaarNumber, enteredOTP) {
       success: true,
       message: `OTP sent to ${mobileNumber}`,
       debugOTP: otp
+return {
+      success: true,
+      message: `OTP sent to ${mobileNumber}`,
+      debugOTP: otp
     };
   }
 
-  // Document verification operations  
+  // Document verification operations
+  async analyzeDocument(documentId) {
+    await delay(800); // Realistic AI processing time
+    
+    // Simulate comprehensive document analysis
+    const analysisResults = {
+      documentId,
+      analyzedAt: new Date().toISOString(),
+      quality: Math.floor(Math.random() * 30) + 70, // 70-100%
+      fraudScore: Math.floor(Math.random() * 100), // 0-100 (lower is better)
+      textConfidence: Math.floor(Math.random() * 20) + 80, // 80-100%
+      
+      // Simulated OCR extraction
+      extractedText: this.generateMockOCRText(documentId),
+      
+      // Key fields extraction (varies by document type)
+      keyFields: this.extractKeyFields(documentId),
+      
+      // Technical metadata
+      metadata: {
+        imageResolution: '1920x1080',
+        colorSpace: 'RGB',
+        compression: 'JPEG',
+        fileIntegrity: 'Valid',
+        lastModified: new Date().toISOString()
+      },
+      
+      // Fraud indicators
+      fraudIndicators: this.generateFraudIndicators(),
+      
+      // Quality metrics
+      qualityMetrics: {
+        sharpness: Math.floor(Math.random() * 20) + 80,
+        brightness: Math.floor(Math.random() * 30) + 70,
+        contrast: Math.floor(Math.random() * 25) + 75,
+        noise: Math.floor(Math.random() * 30) + 10
+      }
+    };
+    
+    return analysisResults;
+  }
+
+  generateMockOCRText(documentId) {
+    const ocrSamples = [
+      "PERMANENT ACCOUNT NUMBER CARD\nName: RAJESH KUMAR SHARMA\nFathers Name: KUMAR SHARMA\nDate of Birth: 15/07/1985\nPAN: ABCDE1234F",
+      "GST CERTIFICATE\nGSTIN: 29ABCDE1234F1Z5\nTrade Name: TECHCORP SOLUTIONS PVT LTD\nLegal Name: TECHCORP SOLUTIONS PRIVATE LIMITED\nDate of Registration: 01/04/2020",
+      "AADHAAR\nName: PRIYA PATEL\nDate of Birth: 22/03/1990\nAddress: 456 BUSINESS CENTER MUMBAI MAHARASHTRA 400001",
+      "BANK STATEMENT\nAccount Holder: AMIT SINGH\nAccount Number: ****1234\nIFSC Code: HDFC0001234\nStatement Period: JAN 2024"
+    ];
+    
+    return ocrSamples[documentId % ocrSamples.length];
+  }
+
+  extractKeyFields(documentId) {
+    const fieldSets = [
+      {
+        documentType: 'PAN',
+        panNumber: 'ABCDE1234F',
+        holderName: 'RAJESH KUMAR SHARMA',
+        fatherName: 'KUMAR SHARMA',
+        dateOfBirth: '15/07/1985'
+      },
+      {
+        documentType: 'GST',
+        gstin: '29ABCDE1234F1Z5',
+        tradeName: 'TECHCORP SOLUTIONS PVT LTD',
+        registrationDate: '01/04/2020',
+        status: 'Active'
+      },
+      {
+        documentType: 'Aadhaar',
+        holderName: 'PRIYA PATEL',
+        dateOfBirth: '22/03/1990',
+        address: 'MUMBAI MAHARASHTRA',
+        maskedNumber: '****-****-1234'
+      },
+      {
+        documentType: 'Bank Statement',
+        accountHolder: 'AMIT SINGH',
+        accountNumber: '****1234',
+        ifscCode: 'HDFC0001234',
+        statementPeriod: 'JAN 2024'
+      }
+    ];
+    
+    return fieldSets[documentId % fieldSets.length];
+  }
+
+  generateFraudIndicators() {
+    const indicators = [];
+    const possibleIndicators = [
+      { type: 'font_inconsistency', severity: 'low', description: 'Minor font variations detected' },
+      { type: 'image_quality', severity: 'medium', description: 'Unusually high compression artifacts' },
+      { type: 'metadata_anomaly', severity: 'low', description: 'Creation date seems recent' },
+      { type: 'template_match', severity: 'high', description: 'Document matches known template' },
+      { type: 'watermark_missing', severity: 'medium', description: 'Expected security features not found' }
+    ];
+    
+    // Randomly select 0-2 indicators
+    const numIndicators = Math.floor(Math.random() * 3);
+    for (let i = 0; i < numIndicators; i++) {
+      const randomIndicator = possibleIndicators[Math.floor(Math.random() * possibleIndicators.length)];
+      if (!indicators.find(ind => ind.type === randomIndicator.type)) {
+        indicators.push(randomIndicator);
+      }
+    }
+    
+    return indicators;
+  }
+
+  async validateDocumentIntegrity(documentId) {
+    await delay(500);
+    
+    return {
+      documentId,
+      isValid: Math.random() > 0.1, // 90% valid
+      validationChecks: {
+        fileSignature: Math.random() > 0.05,
+        checksumValid: Math.random() > 0.02,
+        noTampering: Math.random() > 0.08,
+        formatCompliant: Math.random() > 0.03
+      },
+      validatedAt: new Date().toISOString()
+    };
+  }
+
+  async compareDocumentFields(documentId, applicationData) {
+    await delay(400);
+    
+    const mockComparison = {
+      documentId,
+      comparisonResult: {
+        nameMatch: Math.floor(Math.random() * 15) + 85, // 85-100%
+        addressMatch: Math.floor(Math.random() * 20) + 80, // 80-100%
+        dateMatch: Math.random() > 0.1, // 90% match
+        numberMatch: Math.random() > 0.05 // 95% match
+      },
+      discrepancies: [],
+      overallMatchScore: Math.floor(Math.random() * 15) + 85,
+      comparedAt: new Date().toISOString()
+    };
+    
+    // Add discrepancies if match scores are low
+    if (mockComparison.comparisonResult.nameMatch < 90) {
+      mockComparison.discrepancies.push({
+        field: 'name',
+        severity: 'medium',
+        description: 'Minor spelling variations in name field'
+      });
+    }
+    
+    return mockComparison;
+  }
+
+  async generateVerificationReport(submissionId) {
+    await delay(1000);
+    
+    const submission = await this.getById(submissionId);
+    const documents = submission.documents || [];
+    
+    const documentAnalyses = await Promise.all(
+      documents.map(doc => this.analyzeDocument(doc.Id))
+    );
+    
+    const overallScore = documentAnalyses.reduce((sum, analysis) => 
+      sum + analysis.quality, 0) / documentAnalyses.length;
+    
+    const fraudRisk = documentAnalyses.reduce((sum, analysis) => 
+      sum + analysis.fraudScore, 0) / documentAnalyses.length;
+    
+    return {
+      submissionId,
+      generatedAt: new Date().toISOString(),
+      overallQualityScore: Math.round(overallScore),
+      overallFraudRisk: Math.round(fraudRisk),
+      documentCount: documents.length,
+      documentAnalyses,
+      recommendations: this.generateRecommendations(overallScore, fraudRisk),
+      verificationStatus: overallScore >= 80 && fraudRisk < 50 ? 'RECOMMENDED_APPROVE' : 
+                         overallScore >= 60 && fraudRisk < 70 ? 'REQUIRES_MANUAL_REVIEW' : 
+                         'RECOMMENDED_REJECT'
+    };
+  }
+
+  generateRecommendations(qualityScore, fraudRisk) {
+    const recommendations = [];
+    
+    if (qualityScore < 70) {
+      recommendations.push({
+        type: 'quality_concern',
+        priority: 'high',
+        message: 'Document quality is below acceptable threshold. Request re-upload.'
+      });
+    }
+    
+    if (fraudRisk > 70) {
+      recommendations.push({
+        type: 'fraud_risk',
+        priority: 'critical',
+        message: 'High fraud risk detected. Conduct thorough manual verification.'
+      });
+    }
+    
+    if (qualityScore >= 90 && fraudRisk < 30) {
+      recommendations.push({
+        type: 'auto_approve',
+        priority: 'low',
+        message: 'High quality documents with low fraud risk. Safe for approval.'
+      });
+    }
+    
+    return recommendations;
+  }
 
   // CAF operations
   async generateCAF(formData) {
@@ -817,7 +1035,6 @@ async verifyEKYCOTP(aadhaarNumber, enteredOTP) {
     return cafRecord;
   }
 }
-
 // Create and export singleton instance
 const kycService = new KYCService();
 

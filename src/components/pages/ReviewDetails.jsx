@@ -19,9 +19,13 @@ const ReviewDetails = () => {
   const [error, setError] = useState('');
   const [reviewComment, setReviewComment] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
-  const [showApprovalModal, setShowApprovalModal] = useState(false);
+const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [showRejectionModal, setShowRejectionModal] = useState(false);
-
+  const [showDocumentViewer, setShowDocumentViewer] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [documentAnalysis, setDocumentAnalysis] = useState({});
+  const [verificationChecklist, setVerificationChecklist] = useState({});
+  const [currentDocumentIndex, setCurrentDocumentIndex] = useState(0);
   const loadSubmission = async () => {
     try {
       setLoading(true);
@@ -85,7 +89,50 @@ const ReviewDetails = () => {
       toast.error('Failed to reject submission. Please try again.');
     }
   };
+// Enhanced document viewer with quality analysis
+  const handleDocumentClick = async (document, index) => {
+    setSelectedDocument(document);
+    setCurrentDocumentIndex(index);
+    setShowDocumentViewer(true);
+    
+    // Simulate document analysis
+    try {
+      const analysis = await kycService.analyzeDocument(document.Id);
+      setDocumentAnalysis(prev => ({
+        ...prev,
+        [document.Id]: analysis
+      }));
+    } catch (error) {
+      console.error('Document analysis failed:', error);
+    }
+  };
 
+  const handleCloseDocumentViewer = () => {
+    setShowDocumentViewer(false);
+    setSelectedDocument(null);
+  };
+
+  const navigateDocument = (direction) => {
+    if (!data?.documents) return;
+    
+    const newIndex = direction === 'next' 
+      ? (currentDocumentIndex + 1) % data.documents.length
+      : (currentDocumentIndex - 1 + data.documents.length) % data.documents.length;
+    
+    const newDocument = data.documents[newIndex];
+    setSelectedDocument(newDocument);
+    setCurrentDocumentIndex(newIndex);
+  };
+
+  const updateVerificationChecklist = (documentId, item, checked) => {
+    setVerificationChecklist(prev => ({
+      ...prev,
+      [documentId]: {
+        ...prev[documentId],
+        [item]: checked
+      }
+    }));
+  };
 
   if (loading) return <Loading type="form" />;
   if (error) return <Error message={error} onRetry={loadSubmission} />;
@@ -212,9 +259,160 @@ const ReviewDetails = () => {
         <div className="mt-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">Registered Address</label>
           <p className="text-gray-900">{submission.businessDetails?.address || 'N/A'}</p>
+</div>
+      </Card>
+
+      {/* Enhanced Document Verification Section */}
+      <Card>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-3">
+            <ApperIcon name="FileCheck" className="h-6 w-6 text-primary-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Document Verification</h3>
+          </div>
+          <Badge variant="info" size="sm">
+            {data.documents?.length || 0} Documents
+          </Badge>
         </div>
 
-</Card>
+        {data.documents && data.documents.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {data.documents.map((document, index) => {
+              const analysis = documentAnalysis[document.Id];
+              const checklist = verificationChecklist[document.Id] || {};
+              
+              return (
+                <motion.div
+                  key={document.Id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="relative group"
+                >
+                  <Card 
+                    className="cursor-pointer hover:shadow-elevation-3 transition-all duration-200 border-2 border-transparent hover:border-primary-200"
+                    onClick={() => handleDocumentClick(document, index)}
+                  >
+                    <div className="aspect-[4/3] bg-gray-100 rounded-lg mb-4 overflow-hidden relative">
+                      {document.type?.includes('image') ? (
+                        <img
+                          src={document.url}
+                          alt={document.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDIwMCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik04NS41IDczLjVWNjZIOTQuNVY3My41SDEwMlY4Mi41SDk0LjVWOTBIODUuNVY4Mi41SDc4Vjc4LjVIODUuNVY3My41WiIgZmlsbD0iIzlDQTNBRiIvPgo8L3N2Zz4K';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ApperIcon name="FileText" className="h-12 w-12 text-gray-400" />
+                        </div>
+                      )}
+                      
+                      {/* Document type indicator */}
+                      <div className="absolute top-2 right-2">
+                        <Badge 
+                          variant={document.type?.includes('pdf') ? 'error' : 'primary'} 
+                          size="sm"
+                        >
+                          {document.type?.includes('pdf') ? 'PDF' : 'IMG'}
+                        </Badge>
+                      </div>
+
+                      {/* Quality indicator */}
+                      {analysis && (
+                        <div className="absolute top-2 left-2">
+                          <Badge 
+                            variant={analysis.quality >= 90 ? 'success' : analysis.quality >= 70 ? 'warning' : 'error'}
+                            size="sm"
+                          >
+                            {analysis.quality}%
+                          </Badge>
+                        </div>
+                      )}
+
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200 flex items-center justify-center">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          <ApperIcon name="ZoomIn" className="h-8 w-8 text-white" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-gray-900 text-sm truncate">{document.name}</h4>
+                        <p className="text-xs text-gray-500">
+                          {(document.size / 1024).toFixed(1)} KB • {document.type}
+                        </p>
+                      </div>
+
+                      {/* Verification Checklist */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-gray-700">Verification</span>
+                          <span className="text-xs text-gray-500">
+                            {Object.values(checklist).filter(Boolean).length}/3
+                          </span>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          {[
+                            { key: 'readable', label: 'Clear & Readable' },
+                            { key: 'authentic', label: 'Authentic' },
+                            { key: 'complete', label: 'Complete Info' }
+                          ].map((item) => (
+                            <label key={item.key} className="flex items-center space-x-2 text-xs">
+                              <input
+                                type="checkbox"
+                                checked={checklist[item.key] || false}
+                                onChange={(e) => updateVerificationChecklist(document.Id, item.key, e.target.checked)}
+                                onClick={(e) => e.stopPropagation()}
+                                className="h-3 w-3 text-primary-600 rounded focus:ring-primary-500"
+                              />
+                              <span className="text-gray-600">{item.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Analysis Summary */}
+                      {analysis && (
+                        <div className="pt-2 border-t border-gray-100">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-medium text-gray-700">AI Analysis</span>
+                            <Badge 
+                              variant={analysis.fraudScore < 30 ? 'success' : analysis.fraudScore < 70 ? 'warning' : 'error'}
+                              size="sm"
+                            >
+                              {analysis.fraudScore < 30 ? 'Low Risk' : analysis.fraudScore < 70 ? 'Medium' : 'High Risk'}
+                            </Badge>
+                          </div>
+                          
+                          <div className="space-y-1 text-xs text-gray-600">
+                            <div className="flex justify-between">
+                              <span>Quality:</span>
+                              <span className="font-medium">{analysis.quality}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Text Confidence:</span>
+                              <span className="font-medium">{analysis.textConfidence}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <ApperIcon name="FileX" className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+            <p>No documents uploaded</p>
+          </div>
+        )}
+      </Card>
 
       {/* Telecom Usage */}
       <Card>
@@ -456,6 +654,249 @@ const ReviewDetails = () => {
               </div>
             </div>
           </motion.div>
+</div>
+      )}
+
+      {/* Enhanced Document Viewer Modal */}
+      {showDocumentViewer && selectedDocument && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
+          <div className="relative max-w-6xl max-h-[90vh] w-full h-full flex">
+            {/* Document Display */}
+            <div className="flex-1 flex items-center justify-center p-8">
+              <div className="relative bg-white rounded-lg shadow-elevation-3 max-w-full max-h-full overflow-auto">
+                {selectedDocument.type?.includes('image') ? (
+                  <img
+                    src={selectedDocument.url}
+                    alt={selectedDocument.name}
+                    className="max-w-full max-h-full object-contain"
+                    style={{ maxHeight: '80vh' }}
+                  />
+                ) : (
+                  <div className="w-96 h-96 flex items-center justify-center bg-gray-100">
+                    <div className="text-center">
+                      <ApperIcon name="FileText" className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600 font-medium">{selectedDocument.name}</p>
+                      <p className="text-sm text-gray-500 mt-2">
+                        PDF documents require external viewer
+                      </p>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="mt-4"
+                        onClick={() => window.open(selectedDocument.url, '_blank')}
+                        icon="ExternalLink"
+                      >
+                        Open in New Tab
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Sidebar with Analysis */}
+            <div className="w-96 bg-white p-6 overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">Document Analysis</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCloseDocumentViewer}
+                  icon="X"
+                />
+              </div>
+
+              {/* Document Info */}
+              <div className="mb-6">
+                <h4 className="font-medium text-gray-900 mb-3">{selectedDocument.name}</h4>
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex justify-between">
+                    <span>Size:</span>
+                    <span>{(selectedDocument.size / 1024).toFixed(1)} KB</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Type:</span>
+                    <span>{selectedDocument.type}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Uploaded:</span>
+                    <span>{new Date(selectedDocument.uploadedAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Analysis Results */}
+              {documentAnalysis[selectedDocument.Id] && (
+                <div className="mb-6">
+                  <h4 className="font-medium text-gray-900 mb-3">AI Analysis</h4>
+                  <div className="space-y-4">
+                    {/* Quality Assessment */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-gray-600">Document Quality</span>
+                        <Badge 
+                          variant={documentAnalysis[selectedDocument.Id].quality >= 90 ? 'success' : 
+                                  documentAnalysis[selectedDocument.Id].quality >= 70 ? 'warning' : 'error'}
+                        >
+                          {documentAnalysis[selectedDocument.Id].quality}%
+                        </Badge>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${
+                            documentAnalysis[selectedDocument.Id].quality >= 90 ? 'bg-success' :
+                            documentAnalysis[selectedDocument.Id].quality >= 70 ? 'bg-warning' : 'bg-error'
+                          }`}
+                          style={{ width: `${documentAnalysis[selectedDocument.Id].quality}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Fraud Detection */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-gray-600">Fraud Risk</span>
+                        <Badge 
+                          variant={documentAnalysis[selectedDocument.Id].fraudScore < 30 ? 'success' : 
+                                  documentAnalysis[selectedDocument.Id].fraudScore < 70 ? 'warning' : 'error'}
+                        >
+                          {documentAnalysis[selectedDocument.Id].fraudScore < 30 ? 'Low' : 
+                           documentAnalysis[selectedDocument.Id].fraudScore < 70 ? 'Medium' : 'High'}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Score: {documentAnalysis[selectedDocument.Id].fraudScore}/100
+                      </div>
+                    </div>
+
+                    {/* OCR Results */}
+                    {documentAnalysis[selectedDocument.Id].extractedText && (
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-700 mb-2">Extracted Text</h5>
+                        <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 max-h-32 overflow-y-auto">
+                          {documentAnalysis[selectedDocument.Id].extractedText}
+                        </div>
+                        <div className="mt-2 text-xs text-gray-500">
+                          Confidence: {documentAnalysis[selectedDocument.Id].textConfidence}%
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Key Fields */}
+                    {documentAnalysis[selectedDocument.Id].keyFields && (
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-700 mb-2">Detected Fields</h5>
+                        <div className="space-y-2">
+                          {Object.entries(documentAnalysis[selectedDocument.Id].keyFields).map(([field, value]) => (
+                            <div key={field} className="flex justify-between text-xs">
+                              <span className="text-gray-600 capitalize">{field.replace(/([A-Z])/g, ' $1')}:</span>
+                              <span className="text-gray-900 font-medium">{value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Verification Checklist */}
+              <div className="mb-6">
+                <h4 className="font-medium text-gray-900 mb-3">Verification Checklist</h4>
+                <div className="space-y-3">
+                  {[
+                    { key: 'readable', label: 'Document is clear and readable', icon: 'Eye' },
+                    { key: 'authentic', label: 'Document appears authentic', icon: 'Shield' },
+                    { key: 'complete', label: 'All required information visible', icon: 'CheckCircle' },
+                    { key: 'matching', label: 'Details match application data', icon: 'GitCompare' }
+                  ].map((item) => (
+                    <label key={item.key} className="flex items-start space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={verificationChecklist[selectedDocument.Id]?.[item.key] || false}
+                        onChange={(e) => updateVerificationChecklist(selectedDocument.Id, item.key, e.target.checked)}
+                        className="mt-1 h-4 w-4 text-primary-600 rounded focus:ring-primary-500"
+                      />
+                      <div className="flex items-start space-x-2">
+                        <ApperIcon name={item.icon} className="h-4 w-4 text-gray-500 mt-0.5" />
+                        <span className="text-sm text-gray-700">{item.label}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="space-y-3">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => window.open(selectedDocument.url, '_blank')}
+                  icon="Download"
+                >
+                  Download Document
+                </Button>
+                
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => {
+                    // Simulate re-analysis
+                    toast.info('Re-analyzing document...');
+                    handleDocumentClick(selectedDocument, currentDocumentIndex);
+                  }}
+                  icon="RefreshCw"
+                >
+                  Re-analyze Document
+                </Button>
+              </div>
+            </div>
+
+            {/* Navigation Controls */}
+            <div className="absolute top-1/2 left-4 transform -translate-y-1/2">
+              <Button
+                variant="ghost"
+                size="lg"
+                onClick={() => navigateDocument('prev')}
+                disabled={!data?.documents || data.documents.length <= 1}
+                className="bg-white bg-opacity-80 hover:bg-opacity-100"
+                icon="ChevronLeft"
+              />
+            </div>
+            
+            <div className="absolute top-1/2 right-96 transform -translate-y-1/2">
+              <Button
+                variant="ghost"
+                size="lg"
+                onClick={() => navigateDocument('next')}
+                disabled={!data?.documents || data.documents.length <= 1}
+                className="bg-white bg-opacity-80 hover:bg-opacity-100"
+                icon="ChevronRight"
+              />
+            </div>
+
+            {/* Close Button */}
+            <div className="absolute top-4 right-4">
+              <Button
+                variant="ghost"
+                size="lg"
+                onClick={handleCloseDocumentViewer}
+                className="bg-white bg-opacity-80 hover:bg-opacity-100 text-gray-700"
+                icon="X"
+              />
+            </div>
+
+            {/* Document Counter */}
+            {data?.documents && data.documents.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                <div className="bg-white bg-opacity-80 rounded-full px-3 py-1 text-sm font-medium text-gray-700">
+                  {currentDocumentIndex + 1} of {data.documents.length}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
