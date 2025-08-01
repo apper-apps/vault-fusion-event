@@ -16,11 +16,18 @@ const Input = forwardRef(({
   const baseClasses = 'block w-full rounded-lg border-gray-300 shadow-sm transition-all duration-200 ease-out focus:border-primary-500 focus:ring-primary-500 sm:text-sm';
   const errorClasses = error ? 'border-error focus:border-error focus:ring-error' : '';
   const iconClasses = icon ? (iconPosition === 'left' ? 'pl-10' : 'pr-10') : '';
-
+  
+  // Filter out custom props that shouldn't be passed to DOM elements
+  const { 
+    containerClassName: _containerClassName,
+    iconPosition: _iconPosition,
+    ...domProps 
+  } = props;
+  
   return (
-    <div className={`form-field ${containerClassName}`}>
+    <div className={containerClassName}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
           {label}
           {required && <span className="text-error ml-1">*</span>}
         </label>
@@ -45,7 +52,7 @@ const Input = forwardRef(({
             ${iconClasses}
             ${className}
           `}
-{...props}
+          {...domProps}
         />
       </div>
       

@@ -275,7 +275,7 @@ let errorMessage = 'Failed to send OTP. Please try again.';
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Input
+<Input
             label="Primary Mobile Number"
             value={formData.primaryMobile}
             onChange={(e) => formatAndUpdateMobile('primaryMobile', e.target.value)}
@@ -285,11 +285,10 @@ let errorMessage = 'Failed to send OTP. Please try again.';
             placeholder="Enter your primary mobile number"
             error={validationErrors.primaryMobile}
             maxLength={10}
-className="form-field transition-all duration-200"
-            error={validationErrors.primaryMobile}
+            className="form-field transition-all duration-200"
           />
           
-          <Input
+<Input
             label="Alternate Mobile (Family/Relative)"
             value={formData.alternateMobile}
             onChange={(e) => formatAndUpdateMobile('alternateMobile', e.target.value)}
@@ -297,10 +296,9 @@ className="form-field transition-all duration-200"
             type="tel"
             icon="Phone"
             placeholder="Enter family/relative mobile"
-error={validationErrors.alternateMobile}
+            error={validationErrors.alternateMobile}
             maxLength={10}
             className="form-field transition-all duration-200"
-            className="form-field"
             helpText="This number will receive the OTP for verification"
           />
           

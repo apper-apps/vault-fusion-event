@@ -14,7 +14,7 @@ import KYCWizard from "@/components/pages/KYCWizard";
 import CAFForm from "@/components/pages/CAFForm";
 import eKYC from "@/components/pages/eKYC";
 import ReviewDetails from "@/components/pages/ReviewDetails";
-import AdminDashboard from "@/components/pages/AdminDashboard";
+import AdminDashboard from "@/components/pages/AdminDashboard.jsx";
 
 // Error boundary fallback component
 const ErrorFallback = ({ error, resetErrorBoundary }) => (
